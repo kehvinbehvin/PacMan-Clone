@@ -343,7 +343,7 @@ class Game {
       gridTemplateRows: "repeat(3,1fr)",
     });
     $(".game").append(coinContainer);
-
+    //Coin id generation here is still not done properly, its not unique enough, make sure to change the eatCoin function in pacman as well
     const coin = $("<div>")
       .attr("id", `${colstring + rowstring + rowstring + colstring}`)
       .addClass("coin");
