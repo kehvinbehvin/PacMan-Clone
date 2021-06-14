@@ -1,143 +1,14 @@
-const generatePlatform = () => {
-  $(".main-container").css({
-    position: "absolute",
-    top: "10px",
-    left: "10px",
-    height: "500px",
-    width: "600px",
-    backgroundColor: "black",
-    display: "grid",
-  });
-  $(".main-container").css({
-    margin: "5px",
-    gridTemplateColumns: "60% 40%",
-    gridTemplateRows: "100px auto",
-  });
-  $(".game").css({
-    backgroundColor: "blue",
-    gridColumn: "1 / 3",
-    gridRow: 2,
-    height: "400px",
-    width: "600px",
-    display: "grid",
-  });
-  $(".score").css({
-    backgroundColor: "red",
-    gridColumn: 2,
-    gridRow: 1,
-    fontSize: "60px",
-    color: "white",
-    fontFamily: "Notable",
-    textAlign: "center",
-  });
-  $(".header").css({
-    backgroundColor: "green",
-    gridColumn: 1,
-    gridRow: 1,
-    fontSize: "60px",
-    textAlign: "center",
-    fontFamily: "Notable",
-    color: "yellow",
-  });
-};
-
-const createcolumn = (parent, start, end, col, id) => {
-  const column = $("<div>").addClass("column").attr("id", `${id}`);
-  column.css({
-    gridColumn: col,
-    gridRow: `${start}/${end}`,
-    backgroundColor: "black",
-  });
-  parent.append(column);
-  return { start: start, end: end, col: col };
-};
-const createrow = (parent, start, end, row, id) => {
-  const column = $("<div>").addClass("column").attr("id", `${id}`);
-  column.css({
-    gridColumn: `${start}/${end}`,
-    gridRow: row,
-    backgroundColor: "black",
-  });
-  parent.append(column);
-  return { start: start, end: end, row: row };
-};
-const findArrayinArray = (array, arrayOfArrays) => {
-  const X = array[0];
-  const Y = array[1];
-  const filteredByX = arrayOfArrays.filter((element) => {
-    return element[0] === X;
-  });
-  const filteredByY = filteredByX.filter((element) => {
-    return element[1] === Y;
-  });
-  if (filteredByY.length > 0) {
-    return false; //more than 0 means a copy was found, wall exists
-  } else if (filteredByY.length === 0) {
-    return true;
-  }
-};
-
-const removeArrayinArray = (array, arrayOfArrays) => {
-  //   console.log(array);
-  const X = array[0];
-  const Y = array[1];
-  const filtered = arrayOfArrays.filter((element) => {
-    return !(element[0] === X && element[1] === Y);
-  });
-
-  //   if (filtered.length > 0) {
-  //     console.log("exists");
-  //   } else if (filtered.length === 0) {
-  //     console.log("does not exist");
-  //   }
-
-  return filtered;
-};
-
-const removeMultipleArrays = (arrayofArrays1, arrayofArrays2) => {
-  let staging = arrayofArrays2;
-
-  for (const element of arrayofArrays1) {
-    staging = removeArrayinArray(element, staging);
-  }
-
-  return staging;
-};
-
-const calcAllcolumns = (col, row) => {
-  accumulator = [];
-  for (let i = 1; i <= row; i++) {
-    // i is the row
-    for (let k = 1; k <= col; k++) {
-      // k is the col
-      accumulator.push([k, i]);
-    }
-  }
-  return accumulator;
-};
-const getRowWalls = (wallRowObj) => {
-  const Ycord = wallRowObj.row;
-  let Xcord = wallRowObj.start;
-  const limit = wallRowObj.end - Xcord;
-  const accumulator = [];
-  for (let i = 0; i < limit; i++) {
-    accumulator.push([Xcord, Ycord]);
-    Xcord += 1;
-  }
-  return accumulator;
-};
-
-const getColWalls = (wallColObj) => {
-  let Ycord = wallColObj.start;
-  const Xcord = wallColObj.col;
-  const limit = wallColObj.end - Ycord;
-  const accumulator = [];
-  for (let i = 0; i < limit; i++) {
-    accumulator.push([Xcord, Ycord]);
-    Ycord += 1;
-  }
-  return accumulator;
-};
+import {
+  generatePlatform,
+  createcolumn,
+  createrow,
+  findArrayinArray,
+  removeArrayinArray,
+  removeMultipleArrays,
+  calcAllcolumns,
+  getRowWalls,
+  getColWalls,
+} from "./utils.js";
 
 class things {
   constructor(col, row, id, color) {
@@ -177,16 +48,6 @@ class things {
   getWallCords() {
     // console.log("Pacman read the walls");
     const accumulator = [];
-
-    // for (let i = 0; i < this.wallsColArray.length; i++) {
-    //   const arraysCol = getColWalls(this.wallsColArray[i]);
-    //   accumulator.push(arraysCol);
-    // }
-    // for (let i = 0; i < this.wallsRowArray.length; i++) {
-    //   const arraysRow = getRowWalls(this.wallsRowArray[i]);
-    //   accumulator.push(arraysRow);
-    // }
-    // console.log(accumulator);
     this.wallsColArray.map((elementObj) => {
       return accumulator.push(getColWalls(elementObj));
     });
@@ -288,91 +149,6 @@ class PacMan extends things {
     super(col, row, "paccy", "green");
   }
 
-  // generateBody(parent) {
-  //   parent.append($("<div>").attr("id", "paccy"));
-  //   this.generateCss();
-  // }
-
-  // generateCss() {
-  //   $("#paccy").css({
-  //     gridColumn: this.col,
-  //     gridRow: this.row,
-  //     backgroundColor: "yellow",
-  //   });
-  // }
-  // autoMove(key) {
-  //   while (this.direction === 83) {
-  //     if (key !== 83) {
-  //       return;
-  //     }
-  //   }
-  // }
-  // retrieveWallinfo(rowwalls, colwalls) {
-  //   // console.log("walls transfered to PacMan");
-  //   this.wallsColArray = colwalls;
-  //   this.wallsRowArray = rowwalls;
-  //   // console.log(this.wallsColArray);
-  //   // console.log(this.wallsRowArray);
-  //   this.environmentCollision = this.Walldetection();
-  // }
-  // getWallCords() {
-  //   // console.log("Pacman read the walls");
-  //   const accumulator = [];
-
-  //   // for (let i = 0; i < this.wallsColArray.length; i++) {
-  //   //   const arraysCol = getColWalls(this.wallsColArray[i]);
-  //   //   accumulator.push(arraysCol);
-  //   // }
-  //   // for (let i = 0; i < this.wallsRowArray.length; i++) {
-  //   //   const arraysRow = getRowWalls(this.wallsRowArray[i]);
-  //   //   accumulator.push(arraysRow);
-  //   // }
-  //   // console.log(accumulator);
-  //   this.wallsColArray.map((elementObj) => {
-  //     return accumulator.push(getColWalls(elementObj));
-  //   });
-
-  //   this.wallsRowArray.map((elementObj) => {
-  //     return accumulator.push(getRowWalls(elementObj));
-  //   });
-  //   // console.log(accumulator);
-  //   const deconstructed = [];
-  //   accumulator.map((element) => {
-  //     return element.map((innerElement) => {
-  //       return deconstructed.push(innerElement);
-  //     });
-  //   });
-  //   // console.log(deconstructed);
-  //   return deconstructed;
-  // }
-  // Walldetection() {
-  //   // console.log("Pacmna created the collision function");
-  //   const allWallCords = this.getWallCords();
-  //   const collision = (row, col) => {
-  //     //   console.log("PacMan checking");
-  //     //   console.log(allWallCords.length);
-  //     const matchcols = allWallCords.filter((element) => {
-  //       // console.log(element);
-  //       return element[0] === col;
-  //     });
-  //     //   console.log("Checking row: ", row);
-  //     //   console.log(matchcols);
-  //     const matchrows = matchcols.filter((element) => {
-  //       return element[1] === row;
-  //     });
-  //     //   console.log("Checking col: ", col);
-  //     //   console.log(matchrows);
-  //     if (matchrows.length > 0) {
-  //       // console.log("empty", false);
-  //       return false;
-  //     } else if (matchrows.length === 0) {
-  //       // console.log("empty", true);
-  //       return true;
-  //     }
-  //     //returns true if collision is detected at a specified row/col
-  //   };
-  //   return collision; //invoking walldetection gives us the collision function
-  // }
   listenMovement() {
     $("body").on("keydown", (event) => {
       if (event.keyCode === 83) {
