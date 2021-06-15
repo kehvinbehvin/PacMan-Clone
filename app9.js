@@ -1,3 +1,4 @@
+//Created Dijkstra
 import {
   generatePlatform,
   createcolumn,
@@ -11,6 +12,7 @@ import {
   findObjinArray,
   findMinObjinArray,
   removeObjsinArray,
+  booleanObjinArray,
 } from "./utils.js";
 class things {
   constructor(col, row, id, color) {
@@ -100,86 +102,39 @@ class things {
 class Enemy extends things {
   constructor(col, row) {
     super(col, row, "enemy", "red");
+    this.visitedPath = [];
+    this.moving;
   }
   retrievenodes(allnodes) {
     this.nodes = allnodes;
   }
+  retrievepath(path) {
+    // console.log(path);
+    if (this.visitedPath.length === 0) {
+      this.path = path;
+    } else {
+      const filtered = path.filter((element) => {
+        return !booleanObjinArray(element, this.visitedPath);
+      });
+      this.path = filtered;
+    }
+  }
   startMoving() {
-    // console.log(this.col, this.row);
-    // //0.left,1.right2.down3.up
-    // setTimeout(() => {
-    //   let direction = 3;
-    //   this.row -= 1;
-    //   this.generateCss();
-    //   dijkstraRecalc([this.col, this.row], this.nodes, direction);
-    //   dijkstraCalcPath([10, 10], this.nodes);
-    // }, 1000);
-    // setTimeout(() => {
-    //   let direction = 1;
-    //   this.col += 1;
-    //   this.generateCss();
-    //   dijkstraRecalc([this.col, this.row], this.nodes, direction);
-    //   dijkstraCalcPath([10, 10], this.nodes);
-    // }, 1000);
-    // setTimeout(() => {
-    //   let direction = 3;
-    //   this.row -= 1;
-    //   this.generateCss();
-    //   dijkstraRecalc([this.col, this.row], this.nodes, direction);
-    //   dijkstraCalcPath([10, 10], this.nodes);
-    // }, 1000);
+    this.moving = setInterval(() => {
+      if (this.path.length === 0) {
+        this.stop();
+        $(".game").children().remove();
+      }
+      this.col = this.path[0].col;
+      this.row = this.path[0].row;
+      this.generateCss();
+      this.path.shift();
+    }, 100);
+  }
+  stop() {
+    clearInterval(this.moving);
   }
 }
-//     let direction = 0;
-//     setInterval(() => {
-//       dijkstraRecalc([this.col, this.row], this.nodes, direction);
-//       dijkstraCalcPath([10, 10], this.nodes);
-//       direction = Math.floor(Math.random() * 4); //0.left,1.right2.down3.up
-//       //   dijkstraRecalc([this.col, this.row], this.nodes, direction);
-//       //   dijkstraCalcPath([10, 10], this.nodes);
-//       //   dijkstraRecalc
-//       if (
-//         this.row !== this.limitY[1] && //down
-//         this.environmentCollision(this.row + 1, this.col) &&
-//         direction === 2
-//       ) {
-//         this.row += 1;
-//         this.generateCss();
-//       }
-
-//       // console.log("Move Up");
-//       if (
-//         this.row !== this.limitY[0] &&
-//         this.environmentCollision(this.row - 1, this.col) &&
-//         direction === 3
-//       ) {
-//         this.row -= 1;
-//         this.generateCss();
-//       }
-
-//       // console.log("Move Right");
-//       if (
-//         this.col !== this.limitX[1] &&
-//         this.environmentCollision(this.row, this.col + 1) &&
-//         direction === 1
-//       ) {
-//         this.col += 1;
-//         this.generateCss();
-//       }
-
-//       // console.log("Move Left");
-//       if (
-//         this.col !== this.limitX[0] &&
-//         this.environmentCollision(this.row, this.col - 1) &&
-//         direction === 0
-//       ) {
-//         this.col -= 1;
-//         this.generateCss();
-//       }
-//     }, 2000);
-//     console.log("Move Down");
-//   }
-
 class PacMan extends things {
   constructor(col, row) {
     super(col, row, "paccy", "green");
@@ -187,7 +142,9 @@ class PacMan extends things {
   retrievenodes(allnodes) {
     this.nodes = allnodes;
   }
-
+  retrievepath(path) {
+    this.path = path;
+  }
   listenMovement() {
     $("body").on("keydown", (event) => {
       if (event.keyCode === 83) {
@@ -229,7 +186,9 @@ class PacMan extends things {
       }
       //   console.log("Pacman row", this.row);
       //   console.log("Pacman col", this.col);
-      dijkstraCalcPath([this.col, this.row], this.nodes);
+      const nextPositionObj = findObjinArray([this.col, this.row], this.nodes);
+      this.path.push(nextPositionObj);
+      //   dijkstraCalcPath([this.col, this.row], this.nodes);
       this.aboveCoin();
     });
   }
@@ -284,6 +243,16 @@ class Game {
     this.enemy = new Enemy(20, 11);
     this.enemy.generateBody(this.ref);
     this.enemy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
+  }
+
+  openCommunicationChannel() {
+    this.channels = setInterval(() => {
+      if (this.enemy.path.length === 0) {
+        clearInterval(this.channels);
+      }
+      console.log(this.paccy.path);
+      this.enemy.retrievepath(this.paccy.path);
+    }, 5000);
   }
 
   generateSingleCoin(id, column, row) {
@@ -578,16 +547,16 @@ const generateSinglePath = (id, column, row) => {
   });
   $(".game").append(path);
 };
-const generateFullPath = (arrayofObjs) => {
-  $(".Path").remove();
-  for (let i = arrayofObjs.length - 1; i >= 0; i--) {
-    // console.log(arrayofObjs[i]);
-    const column = arrayofObjs[i].col;
-    const row = arrayofObjs[i].row;
-    const id = "path" + i;
-    generateSinglePath(id, column, row);
-  }
-};
+// const generateFullPath = (arrayofObjs) => {
+//   $(".Path").remove();
+//   for (let i = arrayofObjs.length - 1; i >= 0; i--) {
+//     // console.log(arrayofObjs[i]);
+//     const column = arrayofObjs[i].col;
+//     const row = arrayofObjs[i].row;
+//     const id = "path" + i;
+//     generateSinglePath(id, column, row);
+//   }
+// };
 
 const dijkstra = (start, nodes) => {
   const allnodes = nodes;
@@ -751,8 +720,8 @@ const dijkstraCalcPath = (destinationNode, arrayObjs) => {
       }
     }
   }
-  console.log(path);
-  generateFullPath(path);
+  //   console.log(path);
+  //   generateFullPath(path);
   return path;
 };
 $(() => {
@@ -762,9 +731,12 @@ $(() => {
   game.generateCoins();
   game.makePacMan();
   const allnodesCalculated = dijkstra([20, 11], game.getfreesquares());
-  dijkstraCalcPath([10, 10], allnodesCalculated);
+  const path = dijkstraCalcPath([10, 10], allnodesCalculated);
   game.paccy.retrievenodes(allnodesCalculated);
+  game.paccy.retrievepath(path);
   game.makeEnemies();
   game.enemy.retrievenodes(allnodesCalculated);
+  game.enemy.retrievepath(path);
+  game.openCommunicationChannel();
   game.enemy.startMoving();
 });

@@ -62,6 +62,7 @@ const createrow = (parent, start, end, row, id) => {
   return { start: start, end: end, row: row };
 };
 const findObjinArray = (array, arrayOfArrays) => {
+  //returns object
   const X = array[0];
   const Y = array[1];
   const filteredByX = arrayOfArrays.filter((element) => {
@@ -75,6 +76,22 @@ const findObjinArray = (array, arrayOfArrays) => {
     return false;
   }
   return filteredByY[0];
+};
+const booleanObjinArray = (objs, arrayOfArrays) => {
+  //returns boolean
+  const X = objs.col;
+  const Y = objs.row;
+  const filteredByX = arrayOfArrays.filter((element) => {
+    return element.col === X;
+  });
+  const filteredByY = filteredByX.filter((element) => {
+    return element.row === Y;
+  });
+  if (filteredByY.length === 0) {
+    // console.log("X: ", X, "Y: ", Y, " Not found");
+    return false;
+  }
+  return true;
 };
 const findMinObjinArray = (arrayOfObjs) => {
   let minValue = arrayOfObjs[0].distanceFromSN;
@@ -186,4 +203,5 @@ export {
   findObjinArray,
   findMinObjinArray,
   removeObjsinArray,
+  booleanObjinArray,
 };
