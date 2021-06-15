@@ -1,3 +1,4 @@
+//Shifted functions to util.js, shifted algorithm to seperate file and created parent class of Enemy and Pacman
 import {
   generatePlatform,
   createcolumn,

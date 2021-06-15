@@ -1,3 +1,5 @@
+//first attempt at collision
+
 class screenObj {
   constructor(height, width, color, parentreference, objobarray) {
     this.color = color;

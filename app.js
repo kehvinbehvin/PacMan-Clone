@@ -1,3 +1,5 @@
+//Created Pacman using pixels implementation
+
 $(() => {
   //creating the environment
   $(".game").css({

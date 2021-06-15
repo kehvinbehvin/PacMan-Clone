@@ -1,3 +1,4 @@
+//Create wall detection using grid system
 const findArrayinArray = (array, arrayOfArrays) => {
   const X = array[0];
   const Y = array[1];

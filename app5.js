@@ -1,3 +1,5 @@
+//Implemented grid movement for pacman
+
 //   Create PacMan Object
 class screenObj {
   constructor(height, width, color, parentreference, obstacletest) {

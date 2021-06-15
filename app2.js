@@ -1,4 +1,5 @@
-//   Create PacMan Object
+//   Create PacMan Object from app.js
+
 class screenObj {
   constructor(height, width, color, parentreference) {
     this.color = color;
