@@ -13,7 +13,7 @@ import {
   findMinObjinArray,
   removeObjsinArray,
   booleanObjinArray,
-} from "./utils.js";
+} from "../utils.js";
 class things {
   constructor(col, row, id, color) {
     this.id = id;

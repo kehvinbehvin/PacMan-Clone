@@ -1,46 +1,3 @@
-const generatePlatform = () => {
-  $(".main-container").css({
-    position: "absolute",
-    top: "10px",
-    left: "10px",
-    height: "500px",
-    width: "600px",
-    backgroundColor: "black",
-    display: "grid",
-  });
-  $(".main-container").css({
-    margin: "5px",
-    gridTemplateColumns: "60% 40%",
-    gridTemplateRows: "100px auto",
-  });
-  $(".game").css({
-    backgroundColor: "blue",
-    gridColumn: "1 / 3",
-    gridRow: 2,
-    height: "400px",
-    width: "600px",
-    display: "grid",
-  });
-  $(".score").css({
-    backgroundColor: "red",
-    gridColumn: 2,
-    gridRow: 1,
-    fontSize: "60px",
-    color: "white",
-    fontFamily: "Notable",
-    textAlign: "center",
-  });
-  $(".header").css({
-    backgroundColor: "green",
-    gridColumn: 1,
-    gridRow: 1,
-    fontSize: "60px",
-    textAlign: "center",
-    fontFamily: "Notable",
-    color: "yellow",
-  });
-};
-
 const createcolumn = (parent, start, end, col, id) => {
   const column = $("<div>").addClass("column").attr("id", `${id}`);
   column.css({
@@ -191,7 +148,6 @@ const getColWalls = (wallColObj) => {
 };
 
 export {
-  generatePlatform,
   createcolumn,
   createrow,
   findArrayinArray,

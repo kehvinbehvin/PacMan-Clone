@@ -1,6 +1,5 @@
 import { dijkstra, dijkstraCalcPath } from "./algorithm.js";
 import {
-  generatePlatform,
   createcolumn,
   createrow,
   findArrayinArray,
@@ -125,7 +124,6 @@ class Enemy extends things {
       if (this.path.length === 0) {
         //When Enemy finishes the path algo
         this.stop();
-        $(".game").children().remove();
       }
       let pacManPositionX = parseInt(
         $("#paccy")[0].style.cssText.split(" ")[3]
@@ -143,15 +141,16 @@ class Enemy extends things {
 
       this.generateCss();
       this.path.shift();
-    }, 100);
+    }, 800);
   }
   stop() {
     clearInterval(this.moving);
+    $(".game").children().remove();
   }
 }
 class PacMan extends things {
   constructor(col, row) {
-    super(col, row, "paccy", "green");
+    super(col, row, "paccy", "yellow");
   }
   retrievenodes(allnodes) {
     this.nodes = allnodes;
@@ -234,7 +233,7 @@ class PacMan extends things {
     }
   }
 }
-class Game {
+class GameMechanics {
   constructor() {
     this.parent = parent;
     this.wallsColArray = [];
@@ -247,7 +246,6 @@ class Game {
   makePacMan() {
     this.paccy = new PacMan(10, 10); // Walldetection fn called
     this.paccy.generateBody(this.ref);
-    this.paccy.listenMovement();
     this.paccy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray); // retrieve
     this.paccy.retrieveCoinsinfo(this.startingCoins);
     return this.paccy;
@@ -482,14 +480,105 @@ class Game {
       ob26,
     ];
   }
-  run() {
-    generatePlatform();
+  loadGame() {
     this.generateWalls();
     this.generateCoins();
     this.makePacMan();
     this.makeEnemies();
     this.runDijkstra();
-    this.enemy.startMoving();
   }
+  runGame() {
+    this.enemy.startMoving();
+    this.paccy.listenMovement();
+  }
+}
+class Game {
+  constructor() {
+    this.gameMechanics = new GameMechanics();
+  }
+  generatePlatform() {
+    $(".main-container").css({
+      position: "absolute",
+      top: "10px",
+      left: "10px",
+      height: "500px",
+      width: "600px",
+      backgroundColor: "black",
+      display: "grid",
+    });
+    $(".main-container").css({
+      margin: "5px",
+      gridTemplateColumns: "60% 40%",
+      gridTemplateRows: "100px auto",
+    });
+    $(".game").css({
+      backgroundColor: "blue",
+      gridColumn: "1 / 3",
+      gridRow: 2,
+      height: "400px",
+      width: "600px",
+      display: "grid",
+    });
+    $(".score").css({
+      backgroundColor: "red",
+      gridColumn: 2,
+      gridRow: 1,
+      fontSize: "60px",
+      color: "white",
+      fontFamily: "Notable",
+      textAlign: "center",
+    });
+    $(".header").css({
+      backgroundColor: "green",
+      gridColumn: 1,
+      gridRow: 1,
+      fontSize: "60px",
+      textAlign: "center",
+      fontFamily: "Notable",
+      color: "yellow",
+    });
+  }
+  startMenu() {
+    $(".game").css({
+      backgroundColor: "blue",
+      gridColumn: "1 / 3",
+      gridRow: 2,
+      height: "400px",
+      width: "600px",
+      display: "grid",
+      gridTemplateColumns: "45% 10% 45%",
+      gridTemplateRows: "45% 10% 45%",
+    });
+    const startButton = $("<div>").attr("id", "start-button").text("Start");
+    startButton.css({
+      gridColumn: 2,
+      gridRow: 2,
+      backgroundColor: "blue",
+      textAlign: "center",
+      fontFamily: "Notable",
+      color: "yellow",
+      cursor: "pointer",
+    });
+    $(".game").append(startButton);
+    $("#start-button").on("click", (event) => {
+      this.loadGame();
+    });
+  }
+  loadGame() {
+    $(".game").empty();
+    $(".game").css({
+      backgroundColor: "blue",
+      gridColumn: "1 / 3",
+      gridRow: 2,
+      height: "400px",
+      width: "600px",
+      display: "grid",
+      gridTemplateColumns: "none",
+      gridTemplateRows: "none",
+    });
+    this.gameMechanics.loadGame();
+    this.gameMechanics.runGame();
+  }
+  endMenu() {}
 }
 export { Game };
