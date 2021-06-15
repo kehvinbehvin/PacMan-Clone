@@ -1,4 +1,4 @@
-//Created Dijkstra
+import { dijkstra, dijkstraCalcPath } from "./algorithm.js";
 import {
   generatePlatform,
   createcolumn,
@@ -14,6 +14,7 @@ import {
   removeObjsinArray,
   booleanObjinArray,
 } from "./utils.js";
+
 class things {
   constructor(col, row, id, color) {
     this.id = id;
@@ -42,11 +43,15 @@ class things {
     });
   }
   retrieveWallinfo(rowwalls, colwalls) {
+    // console.log("walls transfered to PacMan");
     this.wallsColArray = colwalls;
     this.wallsRowArray = rowwalls;
+    // console.log(this.wallsColArray);
+    // console.log(this.wallsRowArray);
     this.environmentCollision = this.Walldetection();
   }
   getWallCords() {
+    // console.log("Pacman read the walls");
     const accumulator = [];
     this.wallsColArray.map((elementObj) => {
       return accumulator.push(getColWalls(elementObj));
@@ -55,27 +60,39 @@ class things {
     this.wallsRowArray.map((elementObj) => {
       return accumulator.push(getRowWalls(elementObj));
     });
+    // console.log(accumulator);
     const deconstructed = [];
     accumulator.map((element) => {
       return element.map((innerElement) => {
         return deconstructed.push(innerElement);
       });
     });
+    // console.log(deconstructed);
     return deconstructed;
   }
 
   Walldetection() {
+    // console.log("Pacmna created the collision function");
     const allWallCords = this.getWallCords();
     const collision = (row, col) => {
+      //   console.log("PacMan checking");
+      //   console.log(allWallCords.length);
       const matchcols = allWallCords.filter((element) => {
+        // console.log(element);
         return element[0] === col;
       });
+      //   console.log("Checking row: ", row);
+      //   console.log(matchcols);
       const matchrows = matchcols.filter((element) => {
         return element[1] === row;
       });
+      //   console.log("Checking col: ", col);
+      //   console.log(matchrows);
       if (matchrows.length > 0) {
+        // console.log("empty", false);
         return false;
       } else if (matchrows.length === 0) {
+        // console.log("empty", true);
         return true;
       }
       //returns true if collision is detected at a specified row/col
@@ -93,6 +110,7 @@ class Enemy extends things {
     this.nodes = allnodes;
   }
   retrievepath(path) {
+    // console.log(path);
     if (this.visitedPath.length === 0) {
       this.path = path;
     } else {
@@ -105,11 +123,24 @@ class Enemy extends things {
   startMoving() {
     this.moving = setInterval(() => {
       if (this.path.length === 0) {
+        //When Enemy finishes the path algo
+        this.stop();
+        $(".game").children().remove();
+      }
+      let pacManPositionX = parseInt(
+        $("#paccy")[0].style.cssText.split(" ")[3]
+      );
+      let pacManPositionY = parseInt(
+        $("#paccy")[0].style.cssText.split(" ")[1]
+      );
+      if (pacManPositionX === this.col && pacManPositionY === this.row) {
+        //When Enemy finds pacman before the path finishes
         this.stop();
         $(".game").children().remove();
       }
       this.col = this.path[0].col;
       this.row = this.path[0].row;
+
       this.generateCss();
       this.path.shift();
     }, 100);
@@ -221,13 +252,11 @@ class Game {
     this.paccy.retrieveCoinsinfo(this.startingCoins);
     return this.paccy;
   }
-
   makeEnemies() {
     this.enemy = new Enemy(20, 11);
     this.enemy.generateBody(this.ref);
     this.enemy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
   }
-
   openCommunicationChannel() {
     this.channels = setInterval(() => {
       if (this.enemy.path.length === 0) {
@@ -237,7 +266,14 @@ class Game {
       this.enemy.retrievepath(this.paccy.path);
     }, 5000);
   }
-
+  runDijkstra() {
+    const allnodesCalculated = dijkstra([20, 11], this.getfreesquares());
+    const path = dijkstraCalcPath([10, 10], allnodesCalculated);
+    this.paccy.retrievenodes(allnodesCalculated);
+    this.paccy.retrievepath(path);
+    this.enemy.retrievenodes(allnodesCalculated);
+    this.enemy.retrievepath(path);
+  }
   generateSingleCoin(id, column, row) {
     const colstring = column.toString();
     const rowstring = row.toString();
@@ -446,280 +482,14 @@ class Game {
       ob26,
     ];
   }
+  run() {
+    generatePlatform();
+    this.generateWalls();
+    this.generateCoins();
+    this.makePacMan();
+    this.makeEnemies();
+    this.runDijkstra();
+    this.enemy.startMoving();
+  }
 }
-class Nodes {
-  constructor(col, row, type) {
-    this.col = col;
-    this.row = row;
-    this.position = [this.col, this.row];
-    this.previousnode = {};
-    this.nextnode = {};
-    this.visited = false;
-    this.looked = false;
-    this.type = type; // false means empty, true is wall
-    this.distanceFromSN = 9999;
-    this.neighbours = {};
-  }
-  getNeighbours(arrayobj) {
-    let topNN =
-      this.row - 1 >= 1
-        ? findObjinArray([this.col, this.row - 1], arrayobj)
-        : false;
-    let botNN =
-      this.row + 1 <= 20
-        ? findObjinArray([this.col, this.row + 1], arrayobj)
-        : false;
-    let leftNN =
-      this.col - 1 >= 1
-        ? findObjinArray([this.col - 1, this.row], arrayobj)
-        : false;
-    let rightNN =
-      this.col + 1 <= 30
-        ? findObjinArray([this.col + 1, this.row], arrayobj)
-        : false;
-    this.neighbours = {
-      topNode: topNN,
-      bottomNode: botNN,
-      leftNode: leftNN,
-      rightNode: rightNN,
-    };
-    return;
-  }
-
-  //   if(this.row === 1) {
-  //     return {
-  //         topNN:false,
-  //         botNN:[this.col,this.row+1],
-  //         leftNN: [this.col-1,this.row],
-  //         rightNN: [this.col+1,this.row],
-  //     }
-  //   } else if (this.row === 20) {
-  //     return {
-  //         topNN:[this.col,this.row],
-  //         botNN:false,
-  //         leftNN: [this.col,this.row],
-  //         rightNN: [this.col,this.row],
-  //     }
-  //   } else if (this.col === 1) {
-  //     return {
-  //         topNN:[this.col,this.row],
-  //         botNN:[this.col,this.row],
-  //         leftNN: false,
-  //         rightNN: [this.col,this.row],
-  //     }
-  //   }else if (this.col === 30) {
-  //     return {
-  //         topNN:[this.col,this.row],
-  //         botNN:[this.col,this.row],
-  //         leftNN: [this.col,this.row],
-  //         rightNN: false
-  //     }
-
-  //   } else {
-
-  //   }
-}
-const generateSinglePath = (id, column, row) => {
-  const colstring = column.toString();
-  const rowstring = row.toString();
-  const path = $("<div>").attr("id", `${id}`).addClass("Path");
-  path.css({
-    gridColumn: column,
-    gridRow: row,
-    backgroundColor: "pink",
-  });
-  $(".game").append(path);
-};
-// const generateFullPath = (arrayofObjs) => {
-//   $(".Path").remove();
-//   for (let i = arrayofObjs.length - 1; i >= 0; i--) {
-//     // console.log(arrayofObjs[i]);
-//     const column = arrayofObjs[i].col;
-//     const row = arrayofObjs[i].row;
-//     const id = "path" + i;
-//     generateSinglePath(id, column, row);
-//   }
-// };
-
-const dijkstra = (start, nodes) => {
-  const allnodes = nodes;
-
-  const allnodesobjs = allnodes.map((element) => {
-    return new Nodes(element[0], element[1], false);
-  });
-  const preNodes = allnodesobjs.map((elementobj) => {
-    elementobj.getNeighbours(allnodesobjs);
-    return elementobj;
-  });
-
-  let visited = [];
-  let unvisited = preNodes;
-  const sourceNodePosition = start;
-  const sourceNode = findObjinArray(sourceNodePosition, unvisited);
-  let currentNode = sourceNode;
-  currentNode.distanceFromSN = 0;
-  let looked = [currentNode];
-
-  //   while (unvisited.length > 0) {
-  for (let i = 0; i < 354; i++) {
-    // console.log("currentNode: ", currentNode);
-    // console.log("visited ", visited);
-    // console.log("looked: ", looked);
-    // console.log("unvisted: ", unvisited);
-
-    currentNode = findMinObjinArray(looked);
-    currentNode.visited = true;
-    currentNode.looked = true;
-
-    if (
-      currentNode.neighbours.topNode !== false &&
-      currentNode.neighbours.topNode.looked === false
-    ) {
-      currentNode.neighbours.topNode.distanceFromSN =
-        1 + currentNode.distanceFromSN;
-      currentNode.neighbours.topNode.looked = true;
-      looked.push(currentNode.neighbours.topNode);
-      unvisited = removeObjsinArray(currentNode.neighbours.topNode, unvisited);
-    }
-    if (
-      currentNode.neighbours.bottomNode !== false &&
-      currentNode.neighbours.bottomNode.looked === false
-    ) {
-      currentNode.neighbours.bottomNode.distanceFromSN =
-        1 + currentNode.distanceFromSN;
-      currentNode.neighbours.bottomNode.looked = true;
-      looked.push(currentNode.neighbours.bottomNode);
-      unvisited = removeObjsinArray(
-        currentNode.neighbours.bottomNode,
-        unvisited
-      );
-    }
-    if (
-      currentNode.neighbours.leftNode !== false &&
-      currentNode.neighbours.leftNode.looked === false
-    ) {
-      currentNode.neighbours.leftNode.distanceFromSN =
-        1 + currentNode.distanceFromSN;
-      currentNode.neighbours.leftNode.looked = true;
-      looked.push(currentNode.neighbours.leftNode);
-      unvisited = removeObjsinArray(currentNode.neighbours.leftNode, unvisited);
-    }
-    if (
-      currentNode.neighbours.rightNode !== false &&
-      currentNode.neighbours.rightNode.looked === false
-    ) {
-      currentNode.neighbours.rightNode.distanceFromSN =
-        1 + currentNode.distanceFromSN;
-      currentNode.neighbours.rightNode.looked = true;
-      looked.push(currentNode.neighbours.rightNode);
-      unvisited = removeObjsinArray(
-        currentNode.neighbours.rightNode,
-        unvisited
-      );
-    }
-
-    visited.push(currentNode);
-    unvisited = removeObjsinArray(currentNode, unvisited);
-    looked = removeObjsinArray(currentNode, looked);
-  }
-  return preNodes;
-};
-
-// const dijkstraRecalc = (start, arrayObjs, direction) => {
-//   const newStartPosition = start;
-//   const Xvalue = newStartPosition[0];
-//   //   console.log(Xvalue);
-//   const Yvalue = newStartPosition[1];
-//   //   console.log(Yvalue);
-//   const newStartobj = findObjinArray(newStartPosition, arrayObjs);
-//   if (direction === 0) {
-//     //left
-//     const objsLeft = arrayObjs
-//       .filter((element) => element.col < Xvalue)
-//       .map((element) => (element.distanceFromSN -= 1));
-
-//     const objsRight = arrayObjs
-//       .filter((element) => element.col >= Xvalue)
-//       .map((element) => (element.distanceFromSN += 1));
-//   } else if (direction === 1) {
-//     //right
-//     const objsLeft = arrayObjs
-//       .filter((element) => element.col > Xvalue)
-//       .map((element) => (element.distanceFromSN += 1));
-
-//     const objsRight = arrayObjs
-//       .filter((element) => element.col <= Xvalue)
-//       .map((element) => (element.distanceFromSN -= 1));
-//   } else if (direction === 2) {
-//     //down
-//     const objsUp = arrayObjs.filter((element) => {
-//       return element.row <= Yvalue;
-//     });
-
-//     objsUp.map((element) => (element.distanceFromSN += 1));
-
-//     const objsDown = arrayObjs.filter((element) => {
-//       return element.row > Yvalue;
-//     });
-
-//     objsDown.map((element) => (element.distanceFromSN -= 1));
-//   } else if (direction === 3) {
-//     //Up
-//     console.log(Yvalue);
-//     const objsUp = arrayObjs.filter((element) => {
-//       return element.row >= Yvalue;
-//     });
-//     console.log(objsUp);
-//     objsUp.map((element) => (element.distanceFromSN += 1));
-
-//     const objsDown = arrayObjs.filter((element) => {
-//       return element.row < Yvalue;
-//     });
-//     console.log(objsDown);
-//     objsDown.map((element) => (element.distanceFromSN -= 1));
-//   }
-// };
-const dijkstraCalcPath = (destinationNode, arrayObjs) => {
-  let path = [];
-  //   console.log(arrayObjs);
-  let currentobj = findObjinArray(destinationNode, arrayObjs);
-  for (let i = currentobj.distanceFromSN - 1; i >= 0; i--) {
-    //Find the neightbour that is equal to i
-    const neighbours = [
-      currentobj.neighbours.topNode,
-      currentobj.neighbours.bottomNode,
-      currentobj.neighbours.leftNode,
-      currentobj.neighbours.rightNode,
-    ];
-    // console.log(neighbours);
-    for (let j = 0; j < 4; j++) {
-      if (neighbours[j] !== false) {
-        if (neighbours[j].distanceFromSN === i) {
-          path.unshift(neighbours[j]);
-          currentobj = neighbours[j];
-          console.log(currentobj);
-          break;
-        }
-      }
-    }
-  }
-  //   console.log(path);
-  //   generateFullPath(path);
-  return path;
-};
-$(() => {
-  generatePlatform();
-  const game = new Game();
-  game.generateWalls();
-  game.generateCoins();
-  game.makePacMan();
-  const allnodesCalculated = dijkstra([20, 11], game.getfreesquares());
-  const path = dijkstraCalcPath([10, 10], allnodesCalculated);
-  game.paccy.retrievenodes(allnodesCalculated);
-  game.paccy.retrievepath(path);
-  game.makeEnemies();
-  game.enemy.retrievenodes(allnodesCalculated);
-  game.enemy.retrievepath(path);
-  game.openCommunicationChannel();
-  game.enemy.startMoving();
-});
+export { Game };
