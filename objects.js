@@ -104,6 +104,7 @@ class Enemy extends things {
     super(col, row, "enemy", "red");
     this.visitedPath = [];
     this.moving;
+    this.atePacMan = false;
   }
   retrievenodes(allnodes) {
     this.nodes = allnodes;
@@ -134,7 +135,7 @@ class Enemy extends things {
       if (pacManPositionX === this.col && pacManPositionY === this.row) {
         //When Enemy finds pacman before the path finishes
         this.stop();
-        $(".game").children().remove();
+        this.atePacMan = true;
       }
       this.col = this.path[0].col;
       this.row = this.path[0].row;
@@ -145,7 +146,6 @@ class Enemy extends things {
   }
   stop() {
     clearInterval(this.moving);
-    $(".game").children().remove();
   }
 }
 class PacMan extends things {
@@ -566,6 +566,9 @@ class Game {
   }
   loadGame() {
     $(".game").empty();
+    $("#overlay").remove();
+    $("#score-board").remove();
+    $(".score").text("0");
     $(".game").css({
       backgroundColor: "blue",
       gridColumn: "1 / 3",
@@ -578,7 +581,81 @@ class Game {
     });
     this.gameMechanics.loadGame();
     this.gameMechanics.runGame();
+    this.endMenu();
   }
-  endMenu() {}
+  endMenu() {
+    const checkPacMan = setInterval(() => {
+      console.log(this.gameMechanics.enemy.atePacMan);
+      if (this.gameMechanics.enemy.atePacMan) {
+        clearInterval(checkPacMan);
+        const overlay = $("<div>").attr("id", "overlay");
+        overlay.css({
+          position: "absolute",
+          top:
+            $(".main-container").position().top + $(".game").position().top + 5,
+          left:
+            $(".main-container").position().left +
+            $(".game").position().left +
+            5,
+          opacity: "0.5",
+          backgroundColor: "black",
+          height: "400px",
+          width: "600px",
+        });
+        $("body").append(overlay);
+
+        const scoreboard = $("<div>").attr("id", "score-board");
+        scoreboard.css({
+          position: "absolute",
+          top:
+            $(".main-container").position().top +
+            $(".game").position().top +
+            5 +
+            100,
+          left:
+            $(".main-container").position().left +
+            $(".game").position().left +
+            5 +
+            150,
+          backgroundColor: "grey",
+          opacity: 1,
+          height: "200px",
+          width: "300px",
+          fontFamily: "Notable",
+          textAlign: "center",
+        });
+        $("body").append(scoreboard);
+        const message = $("<p>").text("GAME OVER");
+        message.css({
+          fontSize: "30px",
+          marginTop: "20px",
+        });
+        $("#score-board").append(message);
+        const endScore = $(".score").text();
+        const messageScore = $("<p>").text("Score: " + endScore);
+        messageScore.css({
+          fontSize: "25px",
+        });
+        $("#score-board").append(messageScore);
+        const reStartButton = $("<div>")
+          .attr("id", "re-start-button")
+          .text("Play Again");
+        reStartButton.css({
+          backgroundColor: "blue",
+          textAlign: "center",
+          fontFamily: "Notable",
+          color: "yellow",
+          cursor: "pointer",
+          width: "100px",
+          height: "50px",
+          marginLeft: "100px",
+        });
+        $("#score-board").append(reStartButton);
+        $("#re-start-button").on("click", (event) => {
+          this.loadGame();
+        });
+      } //end of if statement
+    }, 100);
+  }
 }
 export { Game };
