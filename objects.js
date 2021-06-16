@@ -96,10 +96,13 @@ class things {
     };
     return collision; //invoking walldetection gives us the collision function
   }
+  receiveOpponent(obj) {
+    this.opponent = obj;
+  }
 }
 class Enemy extends things {
   constructor(col, row) {
-    super(col, row, "enemy", "red");
+    super(col, row, "enemy-1", "red");
     this.visitedPath = [];
     this.moving;
     this.atePacMan = false;
@@ -119,7 +122,7 @@ class Enemy extends things {
       this.path = filtered;
     }
   }
-  eatenPacManCheck() {
+  pacManCheck() {
     this.atePacManHandler = setInterval(() => {
       let pacManPositionX = parseInt(
         $("#paccy")[0].style.cssText.split(" ")[3]
@@ -129,13 +132,18 @@ class Enemy extends things {
       );
       if (pacManPositionX === this.col && pacManPositionY === this.row) {
         //When Enemy finds pacman before the path finishes
-        this.stop();
-        this.atePacMan = true;
+        if (this.opponent.super) {
+          $(`#${this.id}`).remove();
+          this.stop();
+        } else {
+          this.stop();
+          this.atePacMan = true;
+        }
       }
     }, 100);
   }
   startMoving() {
-    this.eatenPacManCheck();
+    this.pacManCheck();
     this.moving = setInterval(() => {
       if (this.path.length === 0) {
         //When Enemy finishes the path algo
@@ -158,6 +166,7 @@ class PacMan extends things {
     this.completed = false;
     this.super = false;
   }
+
   retrievenodes(allnodes) {
     this.nodes = allnodes;
   }
@@ -232,14 +241,23 @@ class PacMan extends things {
     const stringcol = this.col.toString();
     const stringrow = this.row.toString();
     const powerUpid = stringcol + "-" + stringrow;
+    console.log(this.opponent);
     if (this.powerUpArray.length > 0 && this.super === false) {
       //Cannot eat powerUp while pacman is super
       this.powerUpArray = removeArrayinArray(pacmanPosition, this.powerUpArray);
       $(`.power-up#${powerUpid}`).remove();
       this.super = true;
+      // $(`#${this.opponent.id}`).css({
+      //   backgroundColor: "green",
+      // });
+      this.opponent.color = "green";
       console.log(this.super);
       setTimeout(() => {
         this.super = false;
+        // $(`#${this.opponent.id}`).css({
+        //   backgroundColor: "red",
+        // });
+        this.opponent.color = "red";
         console.log(this.super);
       }, 10000);
     }
@@ -291,6 +309,8 @@ class GameMechanics {
     this.enemy = new Enemy(20, 11);
     this.enemy.generateBody(this.ref);
     this.enemy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
+    this.enemy.receiveOpponent(this.paccy);
+    this.paccy.receiveOpponent(this.enemy);
   }
   openCommunicationChannel() {
     this.channels = setInterval(() => {
