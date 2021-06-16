@@ -105,6 +105,7 @@ class Enemy extends things {
     this.visitedPath = [];
     this.moving;
     this.atePacMan = false;
+    this.atePacManHandler;
   }
   retrievenodes(allnodes) {
     this.nodes = allnodes;
@@ -120,12 +121,8 @@ class Enemy extends things {
       this.path = filtered;
     }
   }
-  startMoving() {
-    this.moving = setInterval(() => {
-      if (this.path.length === 0) {
-        //When Enemy finishes the path algo
-        this.stop();
-      }
+  eatenPacManCheck() {
+    this.atePacManHandler = setInterval(() => {
       let pacManPositionX = parseInt(
         $("#paccy")[0].style.cssText.split(" ")[3]
       );
@@ -137,20 +134,30 @@ class Enemy extends things {
         this.stop();
         this.atePacMan = true;
       }
+    }, 100);
+  }
+  startMoving() {
+    this.eatenPacManCheck();
+    this.moving = setInterval(() => {
+      if (this.path.length === 0) {
+        //When Enemy finishes the path algo
+        this.stop();
+      }
       this.col = this.path[0].col;
       this.row = this.path[0].row;
-
       this.generateCss();
       this.path.shift();
     }, 800);
   }
   stop() {
     clearInterval(this.moving);
+    clearInterval(this.atePacManHandler);
   }
 }
 class PacMan extends things {
   constructor(col, row) {
     super(col, row, "paccy", "yellow");
+    this.completed = false;
   }
   retrievenodes(allnodes) {
     this.nodes = allnodes;
@@ -220,7 +227,7 @@ class PacMan extends things {
     const pacmanPosition = [this.col, this.row];
     const stringcol = this.col.toString();
     const stringrow = this.row.toString();
-    const coinid = stringcol + stringrow + stringrow + stringcol;
+    const coinid = stringcol + "-" + stringrow;
     if (this.coinsArray.length > 0) {
       this.coinsArray = removeArrayinArray(pacmanPosition, this.coinsArray);
       $(`.coin#${coinid}`).remove();
@@ -229,7 +236,7 @@ class PacMan extends things {
       currentScore += 1;
       $($(".score")[0]).text(currentScore);
     } else {
-      console.log("All coins eaten!");
+      this.completed = true;
     }
   }
 }
@@ -287,7 +294,7 @@ class GameMechanics {
     $(".game").append(coinContainer);
     //Coin id generation here is still not done properly, its not unique enough, make sure to change the eatCoin function in pacman as well
     const coin = $("<div>")
-      .attr("id", `${colstring + rowstring + rowstring + colstring}`)
+      .attr("id", `${colstring + "-" + rowstring}`)
       .addClass("coin");
     coin.css({
       gridColumn: 2,
@@ -495,6 +502,7 @@ class GameMechanics {
 class Game {
   constructor() {
     this.gameMechanics = new GameMechanics();
+    this.totalScore = this.gameMechanics.startingCoins;
   }
   generatePlatform() {
     $(".main-container").css({

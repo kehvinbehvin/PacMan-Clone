@@ -64,6 +64,7 @@ const findMinObjinArray = (arrayOfObjs) => {
 const findArrayinArray = (array, arrayOfArrays) => {
   const X = array[0];
   const Y = array[1];
+
   const filteredByX = arrayOfArrays.filter((element) => {
     return element[0] === X;
   });
