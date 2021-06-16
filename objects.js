@@ -156,6 +156,7 @@ class PacMan extends things {
   constructor(col, row) {
     super(col, row, "paccy", "yellow");
     this.completed = false;
+    this.super = false;
   }
   retrievenodes(allnodes) {
     this.nodes = allnodes;
@@ -207,11 +208,41 @@ class PacMan extends things {
       const nextPositionObj = findObjinArray([this.col, this.row], this.nodes);
       this.path.push(nextPositionObj);
       //   dijkstraCalcPath([this.col, this.row], this.nodes);
+      this.abovePowerUp();
       this.aboveCoin();
     });
   }
   retrieveCoinsinfo(coinsArray) {
     this.coinsArray = coinsArray;
+  }
+  retrievePowerUpinfo(powerUpArray) {
+    this.powerUpArray = powerUpArray;
+  }
+  abovePowerUp() {
+    const pacmanPosition = [this.col, this.row];
+    const powerUp = findArrayinArray(pacmanPosition, this.powerUpArray);
+    //false means there is a coin
+    if (powerUp === false) {
+      console.log("theres a powerup below");
+      this.eatPowerUp();
+    }
+  }
+  eatPowerUp() {
+    const pacmanPosition = [this.col, this.row];
+    const stringcol = this.col.toString();
+    const stringrow = this.row.toString();
+    const powerUpid = stringcol + "-" + stringrow;
+    if (this.powerUpArray.length > 0 && this.super === false) {
+      //Cannot eat powerUp while pacman is super
+      this.powerUpArray = removeArrayinArray(pacmanPosition, this.powerUpArray);
+      $(`.power-up#${powerUpid}`).remove();
+      this.super = true;
+      console.log(this.super);
+      setTimeout(() => {
+        this.super = false;
+        console.log(this.super);
+      }, 10000);
+    }
   }
   aboveCoin() {
     const pacmanPosition = [this.col, this.row];
@@ -253,6 +284,7 @@ class GameMechanics {
     this.paccy.generateBody(this.ref);
     this.paccy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray); // retrieve
     this.paccy.retrieveCoinsinfo(this.startingCoins);
+    this.paccy.retrievePowerUpinfo(this.powerUpArray);
     return this.paccy;
   }
   makeEnemies() {
@@ -277,6 +309,45 @@ class GameMechanics {
     this.enemy.retrievenodes(allnodesCalculated);
     this.enemy.retrievepath(path);
   }
+  generatePowerUp(id, column, row) {
+    const colstring = column.toString();
+    const rowstring = row.toString();
+    const powerUpContainer = $("<div>").attr("id", `${id}`);
+    powerUpContainer.css({
+      gridColumn: column,
+      gridRow: row,
+      backgroundColor: "blue",
+      display: "grid",
+      gridTemplateColumns: "repeat(3,1fr)",
+      gridTemplateRows: "repeat(3,1fr)",
+    });
+    $(".game").append(powerUpContainer);
+
+    const powerUp = $("<div>")
+      .attr("id", `${colstring + "-" + rowstring}`)
+      .addClass("power-up");
+    powerUp.css({
+      gridColumn: 2,
+      gridRow: 2,
+      backgroundColor: "pink",
+    });
+    $(`#${id}`).append(powerUp);
+  }
+  generatePowerUps() {
+    const powerUpArea = [
+      [30, 1],
+      [1, 1],
+      [1, 20],
+      [30, 20],
+    ];
+    for (let i = 0; i < powerUpArea.length; i++) {
+      const column = powerUpArea[i][0];
+      const row = powerUpArea[i][1];
+      const id = "powerUp" + i;
+      this.generatePowerUp(id, column, row);
+    }
+    this.powerUpArray = powerUpArea;
+  }
   generateSingleCoin(id, column, row) {
     const colstring = column.toString();
     const rowstring = row.toString();
@@ -290,7 +361,7 @@ class GameMechanics {
       gridTemplateRows: "repeat(3,1fr)",
     });
     $(".game").append(coinContainer);
-    //Coin id generation here is still not done properly, its not unique enough, make sure to change the eatCoin function in pacman as well
+    //Coin id generation here is still not done properly, its not unique enough, make sure to change the eatCoin function in pacman as well //resolved
     const coin = $("<div>")
       .attr("id", `${colstring + "-" + rowstring}`)
       .addClass("coin");
@@ -313,6 +384,10 @@ class GameMechanics {
     //Get all the areas with no walls
     const potentialCoinArea = this.getfreesquares();
     const restrictedArea = [
+      [30, 1],
+      [1, 1],
+      [1, 20],
+      [30, 20],
       [10, 10],
       [8, 7],
       [8, 8],
@@ -488,6 +563,7 @@ class GameMechanics {
   loadGame() {
     this.generateWalls();
     this.generateCoins();
+    this.generatePowerUps();
     this.makePacMan();
     this.makeEnemies();
     this.runDijkstra();
