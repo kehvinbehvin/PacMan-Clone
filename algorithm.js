@@ -45,8 +45,7 @@ class Nodes {
 }
 
 const dijkstra = (start, nodes) => {
-  const allnodes = nodes;
-
+  const allnodes = nodes; //all non-wall areas
   const allnodesobjs = allnodes.map((element) => {
     return new Nodes(element[0], element[1], false);
   });
@@ -124,7 +123,7 @@ const dijkstra = (start, nodes) => {
     unvisited = removeObjsinArray(currentNode, unvisited);
     looked = removeObjsinArray(currentNode, looked);
   }
-  return preNodes;
+  return preNodes; //returns all non-wall nodes objs
 };
 
 const dijkstraCalcPath = (destinationNode, arrayObjs) => {

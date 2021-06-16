@@ -12,7 +12,7 @@ import {
   booleanObjinArray,
 } from "./utils.js";
 
-class things {
+class Thing {
   constructor(col, row, id, color) {
     this.id = id;
     this.color = color;
@@ -26,12 +26,10 @@ class things {
     this.environmentCollision;
     this.score = 0;
   }
-
   generateBody(parent) {
     parent.append($("<div>").attr("id", `${this.id}`));
     this.generateCss();
   }
-
   generateCss() {
     $(`#${this.id}`).css({
       gridColumn: this.col,
@@ -67,7 +65,6 @@ class things {
     // console.log(deconstructed);
     return deconstructed;
   }
-
   Walldetection() {
     // console.log("Pacmna created the collision function");
     const allWallCords = this.getWallCords();
@@ -96,25 +93,21 @@ class things {
     };
     return collision; //invoking walldetection gives us the collision function
   }
-  receiveOpponent(obj) {
-    this.opponent = obj;
-  }
 }
-class Enemy extends things {
-  constructor(col, row) {
-    super(col, row, "enemy-1", "red");
+class Enemy extends Thing {
+  constructor(col, row, id, color) {
+    super(col, row, id, color);
     this.visitedPath = [];
     this.moving;
     this.atePacMan = false;
     this.atePacManHandler;
   }
-  retrievenodes(allnodes) {
-    this.nodes = allnodes;
+  receiveOpponent(obj) {
+    this.opponent = obj;
   }
-  retrievepath(path) {
-    // console.log(path);
+  retrievepath() {
     if (this.visitedPath.length === 0) {
-      this.path = path;
+      this.path = this.opponent.path[this.id];
     } else {
       const filtered = path.filter((element) => {
         return !booleanObjinArray(element, this.visitedPath);
@@ -124,14 +117,13 @@ class Enemy extends things {
   }
   pacManCheck() {
     this.atePacManHandler = setInterval(() => {
-      let pacManPositionX = parseInt(
-        $("#paccy")[0].style.cssText.split(" ")[3]
-      );
-      let pacManPositionY = parseInt(
-        $("#paccy")[0].style.cssText.split(" ")[1]
-      );
+      this.retrievepath();
+      let pacManPositionX = parseInt(this.opponent.col);
+      let pacManPositionY = parseInt(this.opponent.row);
+      console.log(this.opponent.super);
       if (pacManPositionX === this.col && pacManPositionY === this.row) {
         //When Enemy finds pacman before the path finishes
+
         if (this.opponent.super) {
           $(`#${this.id}`).remove();
           this.stop();
@@ -142,7 +134,7 @@ class Enemy extends things {
       }
     }, 100);
   }
-  startMoving() {
+  startMoving(speed) {
     this.pacManCheck();
     this.moving = setInterval(() => {
       if (this.path.length === 0) {
@@ -153,30 +145,34 @@ class Enemy extends things {
       this.row = this.path[0].row;
       this.generateCss();
       this.path.shift();
-    }, 800);
+    }, speed);
   }
   stop() {
     clearInterval(this.moving);
     clearInterval(this.atePacManHandler);
   }
 }
-class PacMan extends things {
+class PacMan extends Thing {
   constructor(col, row) {
     super(col, row, "paccy", "yellow");
     this.completed = false;
     this.super = false;
+    this.path = {};
+    this.opponents = {};
   }
-
+  receiveOpponent(obj, enemy) {
+    this.opponents[enemy] = obj;
+  }
   retrievenodes(allnodes) {
     this.nodes = allnodes;
   }
-  retrievepath(path) {
-    this.path = path;
+  retrievepath(path, enemy) {
+    this.path[enemy] = path;
   }
   listenMovement() {
     $("body").on("keydown", (event) => {
       if (event.keyCode === 83) {
-        console.log("Move Down");
+        // console.log("Move Down");
         if (
           this.row !== this.limitY[1] &&
           this.environmentCollision(this.row + 1, this.col)
@@ -185,7 +181,7 @@ class PacMan extends things {
           this.generateCss();
         }
       } else if (event.keyCode === 87) {
-        console.log("Move Up");
+        // console.log("Move Up");
         if (
           this.row !== this.limitY[0] &&
           this.environmentCollision(this.row - 1, this.col)
@@ -194,7 +190,7 @@ class PacMan extends things {
           this.generateCss();
         }
       } else if (event.keyCode === 68 && this.keyCode !== 68) {
-        console.log("Move Right");
+        // console.log("Move Right");
         if (
           this.col !== this.limitX[1] &&
           this.environmentCollision(this.row, this.col + 1)
@@ -203,7 +199,7 @@ class PacMan extends things {
           this.generateCss();
         }
       } else if (event.keyCode === 65) {
-        console.log("Move Left");
+        // console.log("Move Left");
         if (
           this.col !== this.limitX[0] &&
           this.environmentCollision(this.row, this.col - 1)
@@ -212,11 +208,10 @@ class PacMan extends things {
           this.generateCss();
         }
       }
-      //   console.log("Pacman row", this.row);
-      //   console.log("Pacman col", this.col);
-      const nextPositionObj = findObjinArray([this.col, this.row], this.nodes);
-      this.path.push(nextPositionObj);
-      //   dijkstraCalcPath([this.col, this.row], this.nodes);
+      const nextPositionObj = findObjinArray([this.col, this.row], this.nodes); //Pacman uses all the array with all the node objs to retrieve the node that corresponds to the current position of Panman and appends the path array for the enemy to follow.
+      for (const item in this.opponents) {
+        this.path[item].push(nextPositionObj);
+      }
       this.abovePowerUp();
       this.aboveCoin();
     });
@@ -241,24 +236,19 @@ class PacMan extends things {
     const stringcol = this.col.toString();
     const stringrow = this.row.toString();
     const powerUpid = stringcol + "-" + stringrow;
-    console.log(this.opponent);
     if (this.powerUpArray.length > 0 && this.super === false) {
       //Cannot eat powerUp while pacman is super
       this.powerUpArray = removeArrayinArray(pacmanPosition, this.powerUpArray);
       $(`.power-up#${powerUpid}`).remove();
       this.super = true;
-      // $(`#${this.opponent.id}`).css({
-      //   backgroundColor: "green",
-      // });
-      this.opponent.color = "green";
-      console.log(this.super);
+      for (const item in this.opponents) {
+        this.opponents[item].color = "green";
+      }
       setTimeout(() => {
         this.super = false;
-        // $(`#${this.opponent.id}`).css({
-        //   backgroundColor: "red",
-        // });
-        this.opponent.color = "red";
-        console.log(this.super);
+        for (const item in this.opponents) {
+          this.opponents[item].color = "red";
+        }
       }, 10000);
     }
   }
@@ -296,7 +286,6 @@ class GameMechanics {
     this.paccy = {};
     this.startingCoins = 0;
   }
-
   makePacMan() {
     this.paccy = new PacMan(10, 10); // Walldetection fn called
     this.paccy.generateBody(this.ref);
@@ -306,28 +295,27 @@ class GameMechanics {
     return this.paccy;
   }
   makeEnemies() {
-    this.enemy = new Enemy(20, 11);
-    this.enemy.generateBody(this.ref);
-    this.enemy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
-    this.enemy.receiveOpponent(this.paccy);
-    this.paccy.receiveOpponent(this.enemy);
+    this.inky = new Enemy(20, 11, "Inky", "purple");
+    this.inky.generateBody(this.ref);
+    this.inky.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
+    this.inky.receiveOpponent(this.paccy);
+    this.paccy.receiveOpponent(this.inky, this.inky.id);
+    this.runDijkstra([20, 11], [10, 10], "Inky");
+
+    this.blinky = new Enemy(20, 12, "Blinky", "red");
+    this.blinky.generateBody(this.ref);
+    this.blinky.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
+    this.blinky.receiveOpponent(this.paccy);
+    this.paccy.receiveOpponent(this.blinky, this.blinky.id);
+    this.runDijkstra([20, 12], [10, 10], "Blinky");
   }
-  openCommunicationChannel() {
-    this.channels = setInterval(() => {
-      if (this.enemy.path.length === 0) {
-        clearInterval(this.channels);
-      }
-      console.log(this.paccy.path);
-      this.enemy.retrievepath(this.paccy.path);
-    }, 5000);
-  }
-  runDijkstra() {
-    const allnodesCalculated = dijkstra([20, 11], this.getfreesquares());
-    const path = dijkstraCalcPath([10, 10], allnodesCalculated);
-    this.paccy.retrievenodes(allnodesCalculated);
-    this.paccy.retrievepath(path);
-    this.enemy.retrievenodes(allnodesCalculated);
-    this.enemy.retrievepath(path);
+  runDijkstra(enemyPosition, pacmanposition, enemyid) {
+    //runDijkstra has to be run for each enemy
+    const allnodesCalculated = dijkstra(enemyPosition, this.getfreesquares()); //is a list of all non-wall node objs with their distance calculated from the sourceNode.
+    const path = dijkstraCalcPath(pacmanposition, allnodesCalculated);
+    this.paccy.retrievenodes(allnodesCalculated); //paccy needs the nodes to append the node that it went to so that the enemy knows where paccy went
+    this.paccy.retrievepath(path, enemyid);
+    // this.enemy.retrievepath(path);
   }
   generatePowerUp(id, column, row) {
     const colstring = column.toString();
@@ -490,18 +478,7 @@ class GameMechanics {
     return removedRestrictedArea;
   }
   getWallCords() {
-    // console.log("Pacman read the walls");
     const accumulator = [];
-
-    // for (let i = 0; i < this.wallsColArray.length; i++) {
-    //   const arraysCol = getColWalls(this.wallsColArray[i]);
-    //   accumulator.push(arraysCol);
-    // }
-    // for (let i = 0; i < this.wallsRowArray.length; i++) {
-    //   const arraysRow = getRowWalls(this.wallsRowArray[i]);
-    //   accumulator.push(arraysRow);
-    // }
-    // console.log(accumulator);
     this.wallsColArray.map((elementObj) => {
       return accumulator.push(getColWalls(elementObj));
     });
@@ -516,7 +493,7 @@ class GameMechanics {
         return deconstructed.push(innerElement);
       });
     });
-    // console.log(deconstructed);
+
     return deconstructed;
   }
   generateWalls() {
@@ -586,10 +563,10 @@ class GameMechanics {
     this.generatePowerUps();
     this.makePacMan();
     this.makeEnemies();
-    this.runDijkstra();
   }
   runGame() {
-    this.enemy.startMoving();
+    this.inky.startMoving(800);
+    this.blinky.startMoving(500);
     this.paccy.listenMovement();
   }
 }
@@ -681,7 +658,6 @@ class Game {
       gridTemplateRows: "none",
     });
     this.gameMechanics.loadGame();
-
     this.gameMechanics.runGame();
     this.endMenu();
   }
@@ -690,10 +666,13 @@ class Game {
       this.totalScore = parseInt(this.gameMechanics.startCoinsValue);
       this.currentScore = parseInt($(".score").text());
       if (
-        this.gameMechanics.enemy.atePacMan ||
+        this.gameMechanics.inky.atePacMan ||
+        this.gameMechanics.blinky.atePacMan ||
         this.totalScore === this.currentScore
       ) {
         clearInterval(checkPacMan);
+        this.gameMechanics.blinky.stop();
+        this.gameMechanics.inky.stop();
         $("body").off("keydown");
         const overlay = $("<div>").attr("id", "overlay");
         overlay.css({
