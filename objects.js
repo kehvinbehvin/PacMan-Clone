@@ -392,7 +392,7 @@ class GameMechanics {
       const id = "coin" + i;
       this.generateSingleCoin(id, column, row);
     }
-
+    this.startCoinsValue = removedRestrictedArea.length;
     this.startingCoins = removedRestrictedArea;
     return removedRestrictedArea;
   }
@@ -502,7 +502,6 @@ class GameMechanics {
 class Game {
   constructor() {
     this.gameMechanics = new GameMechanics();
-    this.totalScore = this.gameMechanics.startingCoins;
   }
   generatePlatform() {
     $(".main-container").css({
@@ -588,13 +587,19 @@ class Game {
       gridTemplateRows: "none",
     });
     this.gameMechanics.loadGame();
+
     this.gameMechanics.runGame();
     this.endMenu();
   }
   endMenu() {
     const checkPacMan = setInterval(() => {
-      console.log(this.gameMechanics.enemy.atePacMan);
-      if (this.gameMechanics.enemy.atePacMan) {
+      this.totalScore = parseInt(this.gameMechanics.startCoinsValue);
+      this.currentScore = parseInt($(".score").text());
+
+      if (
+        this.gameMechanics.enemy.atePacMan ||
+        this.totalScore === this.currentScore
+      ) {
         clearInterval(checkPacMan);
         const overlay = $("<div>").attr("id", "overlay");
         overlay.css({
