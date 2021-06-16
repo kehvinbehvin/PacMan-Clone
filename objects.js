@@ -10,6 +10,7 @@ import {
   getColWalls,
   findObjinArray,
   booleanObjinArray,
+  reverseArray,
 } from "./utils.js";
 
 class Thing {
@@ -97,7 +98,7 @@ class Thing {
 class Enemy extends Thing {
   constructor(col, row, id, color) {
     super(col, row, id, color);
-    this.visitedPath = [];
+    this.visitedPathPacMan = [];
     this.moving;
     this.atePacMan = false;
     this.atePacManHandler;
@@ -105,25 +106,62 @@ class Enemy extends Thing {
   receiveOpponent(obj) {
     this.opponent = obj;
   }
-  retrievepath() {
-    if (this.visitedPath.length === 0) {
-      this.path = this.opponent.path[this.id];
-    } else {
-      const filtered = path.filter((element) => {
-        return !booleanObjinArray(element, this.visitedPath);
-      });
-      this.path = filtered;
+  retrieveRegularPaths(paths, startPaths) {
+    this.regularPaths = paths;
+    this.startPaths = startPaths;
+  }
+  chooseStartPath() {
+    const randomChoice = [Math.floor(Math.random() * this.startPaths.length)]; //random choice of inner array
+    return this.startPaths[randomChoice].reverse();
+  }
+  chooseRegularPath() {
+    //regular path is made of 3 big arrays, each big array is made up of many arrays of node objs, the path is the array of nodes, i want to only retrieve the array of nodes of which the row and col is the same as the current position of blinky
+    let nextPath = [];
+    console.log(this.regularPaths);
+    for (let i = 0; i < 3; i++) {
+      //look at 3 array
+      for (let j = 0; j < this.regularPaths[i].length; j++) {
+        //look at array of paths
+        const tofindX = this.path[this.path.length - 1].col;
+        const tofindY = this.path[this.path.length - 1].row;
+        const XInspect = this.regularPaths[i][j][0].col;
+        const YInspect = this.regularPaths[i][j][0].row;
+        const XInspectEND =
+          this.regularPaths[i][j][this.regularPaths[i][j].length - 1].col;
+        const YInspectEND =
+          this.regularPaths[i][j][this.regularPaths[i][j].length - 1].row;
+        if (XInspect === tofindX && YInspect === tofindY) {
+          console.log("found");
+          nextPath.push(this.regularPaths[i][j]);
+        } else if (XInspectEND === tofindX && YInspectEND === tofindY) {
+          console.log("found reverse");
+          nextPath.push(this.regularPaths[i][j].reverse());
+        }
+      }
     }
+    //nextpath will have a few paths inside, then i will choose randomly which one to append to the path of Blinky
+    const randomChoice = Math.floor(Math.random() * nextPath.length);
+    return nextPath[randomChoice];
+  }
+  retrievePacManpath() {
+    this.updatePacManPathHandler = setInterval(() => {
+      if (this.visitedPathPacMan.length === 0) {
+        this.path = this.opponent.path[this.id];
+      } else {
+        const filtered = path.filter((element) => {
+          return !booleanObjinArray(element, this.visitedPathPacMan);
+        });
+        this.path = filtered;
+      }
+    }, 100);
   }
   pacManCheck() {
     this.atePacManHandler = setInterval(() => {
-      this.retrievepath();
+      // for blinky, this needs to be regularpath instead
       let pacManPositionX = parseInt(this.opponent.col);
       let pacManPositionY = parseInt(this.opponent.row);
-      console.log(this.opponent.super);
       if (pacManPositionX === this.col && pacManPositionY === this.row) {
         //When Enemy finds pacman before the path finishes
-
         if (this.opponent.super) {
           $(`#${this.id}`).remove();
           this.stop();
@@ -135,21 +173,42 @@ class Enemy extends Thing {
     }, 100);
   }
   startMoving(speed) {
-    this.pacManCheck();
-    this.moving = setInterval(() => {
-      if (this.path.length === 0) {
-        //When Enemy finishes the path algo
-        this.stop();
-      }
-      this.col = this.path[0].col;
-      this.row = this.path[0].row;
-      this.generateCss();
-      this.path.shift();
-    }, speed);
+    if (this.id === "Inky") {
+      this.retrievePacManpath();
+      this.pacManCheck();
+      this.moving = setInterval(() => {
+        if (this.path.length === 0) {
+          //When Enemy finishes the path algo
+          this.stop();
+        }
+        console.log(this.id);
+        this.col = this.path[0].col;
+        this.row = this.path[0].row;
+        this.generateCss();
+        this.path.shift();
+      }, speed);
+    } else if (this.id === "Blinky") {
+      this.path = this.chooseStartPath();
+      this.pacManCheck();
+      this.moving = setInterval(() => {
+        console.log(this.path.length);
+        if (this.path.length <= 5) {
+          console.log(this.path);
+          this.path = this.path.concat(this.chooseRegularPath());
+          console.log(this.path);
+        }
+        console.log(this.id);
+        this.col = this.path[0].col;
+        this.row = this.path[0].row;
+        this.generateCss();
+        this.path.shift();
+      }, speed);
+    }
   }
   stop() {
     clearInterval(this.moving);
     clearInterval(this.atePacManHandler);
+    clearInterval(this.updatePacManPathHandler);
   }
 }
 class PacMan extends Thing {
@@ -209,9 +268,10 @@ class PacMan extends Thing {
         }
       }
       const nextPositionObj = findObjinArray([this.col, this.row], this.nodes); //Pacman uses all the array with all the node objs to retrieve the node that corresponds to the current position of Panman and appends the path array for the enemy to follow.
-      for (const item in this.opponents) {
-        this.path[item].push(nextPositionObj);
-      }
+      // for (const item in this.opponents) {
+      //   this.path[item].push(nextPositionObj);
+      // }
+      this.path["Inky"].push(nextPositionObj);
       this.abovePowerUp();
       this.aboveCoin();
     });
@@ -285,6 +345,7 @@ class GameMechanics {
     this.ref = $(".game");
     this.paccy = {};
     this.startingCoins = 0;
+    this.regularPaths = [];
   }
   makePacMan() {
     this.paccy = new PacMan(10, 10); // Walldetection fn called
@@ -307,15 +368,105 @@ class GameMechanics {
     this.blinky.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
     this.blinky.receiveOpponent(this.paccy);
     this.paccy.receiveOpponent(this.blinky, this.blinky.id);
-    this.runDijkstra([20, 12], [10, 10], "Blinky");
+    this.blinky.retrieveRegularPaths(
+      this.regularPaths,
+      this.generateStartingPaths([20, 12])
+    );
   }
-  runDijkstra(enemyPosition, pacmanposition, enemyid) {
+  runDijkstra(sourcePosition, destinationposition, enemyid) {
     //runDijkstra has to be run for each enemy
-    const allnodesCalculated = dijkstra(enemyPosition, this.getfreesquares()); //is a list of all non-wall node objs with their distance calculated from the sourceNode.
-    const path = dijkstraCalcPath(pacmanposition, allnodesCalculated);
+    const allnodesCalculated = dijkstra(sourcePosition, this.getfreesquares()); //is a list of all non-wall node objs with their distance calculated from the sourceNode.
+    const path = dijkstraCalcPath(destinationposition, allnodesCalculated);
     this.paccy.retrievenodes(allnodesCalculated); //paccy needs the nodes to append the node that it went to so that the enemy knows where paccy went
     this.paccy.retrievepath(path, enemyid);
     // this.enemy.retrievepath(path);
+  }
+  generateStartingPaths(startPosition) {
+    const startWaypoints = [];
+    const startPaths = [
+      [7, 6],
+      [14, 6],
+      [17, 15],
+      [24, 15],
+      [7, 6],
+      [14, 6],
+      [17, 15],
+      [24, 15],
+      [30, 10],
+      [2, 10],
+    ];
+    for (let i = 0; i < startPaths.length; i++) {
+      const allnodesCalculated = dijkstra(startPaths[i], this.getfreesquares());
+      const path = dijkstraCalcPath(startPosition, allnodesCalculated);
+      startWaypoints.push(path);
+    }
+    return startWaypoints;
+  }
+  generateRegularPaths() {
+    const innerMostWaypointsCord = [
+      [7, 6],
+      [14, 6],
+      [17, 15],
+      [24, 15],
+    ];
+    const middleWaypointsCord = [
+      [11, 4],
+      [20, 4],
+      [11, 17],
+      [20, 17],
+    ];
+    const outerMostWaypointsCord = [
+      [30, 10],
+      [2, 10],
+    ];
+    const innerAndMiddle = [];
+    const innerAndOuter = [];
+    const middleAndOuter = [];
+
+    for (let i = 0; i < innerMostWaypointsCord.length; i++) {
+      for (let j = 0; j < middleWaypointsCord.length; j++) {
+        const allnodesCalculated = dijkstra(
+          innerMostWaypointsCord[i],
+          this.getfreesquares()
+        );
+        const path = dijkstraCalcPath(
+          middleWaypointsCord[j],
+          allnodesCalculated
+        );
+        innerAndMiddle.push(path);
+      }
+    }
+
+    for (let i = 0; i < innerMostWaypointsCord.length; i++) {
+      for (let j = 0; j < outerMostWaypointsCord.length; j++) {
+        const allnodesCalculated = dijkstra(
+          innerMostWaypointsCord[i],
+          this.getfreesquares()
+        );
+        const path = dijkstraCalcPath(
+          outerMostWaypointsCord[j],
+          allnodesCalculated
+        );
+        innerAndOuter.push(path);
+      }
+    }
+
+    for (let i = 0; i < outerMostWaypointsCord.length; i++) {
+      for (let j = 0; j < middleWaypointsCord.length; j++) {
+        const allnodesCalculated = dijkstra(
+          outerMostWaypointsCord[i],
+          this.getfreesquares()
+        );
+        const path = dijkstraCalcPath(
+          middleWaypointsCord[j],
+          allnodesCalculated
+        );
+        middleAndOuter.push(path);
+      }
+    }
+
+    this.regularPaths = [innerAndOuter, innerAndMiddle, middleAndOuter];
+    console.log(this.regularPaths);
   }
   generatePowerUp(id, column, row) {
     const colstring = column.toString();
@@ -561,6 +712,7 @@ class GameMechanics {
     this.generateWalls();
     this.generateCoins();
     this.generatePowerUps();
+    this.generateRegularPaths();
     this.makePacMan();
     this.makeEnemies();
   }

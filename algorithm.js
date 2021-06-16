@@ -130,6 +130,7 @@ const dijkstraCalcPath = (destinationNode, arrayObjs) => {
   let path = [];
   //   console.log(arrayObjs);
   let currentobj = findObjinArray(destinationNode, arrayObjs);
+  path.unshift(currentobj);
   for (let i = currentobj.distanceFromSN - 1; i >= 0; i--) {
     //Find the neightbour that is equal to i
     const neighbours = [
@@ -142,6 +143,9 @@ const dijkstraCalcPath = (destinationNode, arrayObjs) => {
     for (let j = 0; j < 4; j++) {
       if (neighbours[j] !== false) {
         if (neighbours[j].distanceFromSN === i) {
+          // if (i === 0) {
+          //   console.log(neighbours[j]);
+          // }
           path.unshift(neighbours[j]);
           currentobj = neighbours[j];
           //   console.log(currentobj);
