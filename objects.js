@@ -9,8 +9,6 @@ import {
   getRowWalls,
   getColWalls,
   findObjinArray,
-  findMinObjinArray,
-  removeObjsinArray,
   booleanObjinArray,
 } from "./utils.js";
 
@@ -595,12 +593,12 @@ class Game {
     const checkPacMan = setInterval(() => {
       this.totalScore = parseInt(this.gameMechanics.startCoinsValue);
       this.currentScore = parseInt($(".score").text());
-
       if (
         this.gameMechanics.enemy.atePacMan ||
         this.totalScore === this.currentScore
       ) {
         clearInterval(checkPacMan);
+        $("body").off("keydown");
         const overlay = $("<div>").attr("id", "overlay");
         overlay.css({
           position: "absolute",

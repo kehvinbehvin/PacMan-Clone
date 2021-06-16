@@ -162,34 +162,3 @@ export {
   removeObjsinArray,
   booleanObjinArray,
 };
-
-/**
- * parent
- * css({
- * display:grid
- * template-grid-column: auto auto auto
- * template-grid-row:100%
- * })
- * 
- * children 1
- * css({
- * attr("id","1-2")
- * grid-column-start: 1
- * grid-column-end: 2
- * })
-
- * children2
- * css({
- * grid-column-start: 2
- * grid-column-end: 
- * })
- * 
- * for (let i = 0;i<100;1++) {
-    * const child = ("<div>").attr("id",i).addClass(".child")
-    * child.css({
-        * grid-column-start: i
-        * grid-column-end: i+1
- * })
- * parent.append(child)
- * }
- */
