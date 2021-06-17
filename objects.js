@@ -227,6 +227,8 @@ class PacMan extends Thing {
     this.super = false;
     this.path = {};
     this.opponents = {};
+    this.keyCode = 0;
+    this.movingdirection = 0;
   }
   receiveOpponent(obj, enemy) {
     this.opponents[enemy] = obj;
@@ -769,7 +771,7 @@ class Game {
     $(".game").addClass("startMenu");
     const startButton = $("<div>")
       .attr("id", "start-button")
-      .text("Start")
+      .text("Click to Start")
       .addClass("startButton")
       .addClass("startMenu");
     $(".game").append(startButton);

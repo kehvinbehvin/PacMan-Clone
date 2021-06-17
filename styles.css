@@ -44,7 +44,7 @@
   height: 400px;
   width: 600px;
   display: grid;
-  grid-template-columns: 45% 10% 45%;
+  grid-template-columns: 40% 20% 40%;
   grid-template-rows: 45% 10% 45%;
 }
 .game .startButton.startMenu {
