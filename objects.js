@@ -125,6 +125,7 @@ class Enemy extends Thing {
         const tofindY = this.path[this.path.length - 1].row;
         const XInspect = this.regularPaths[i][j][0].col;
         const YInspect = this.regularPaths[i][j][0].row;
+        //This code looks at the coordinates at the end of the enemy's current path, then it searches the array of paths (regularpaths) for the same coordinates a
         const XInspectEND =
           this.regularPaths[i][j][this.regularPaths[i][j].length - 1].col;
         const YInspectEND =
