@@ -29,6 +29,7 @@ class Thing {
   generateBody(parent, urlgif) {
     parent.append($("<div>").attr("id", `${this.id}`));
     this.generateCss();
+    this.gif = urlgif;
     const imagegif = $("<img>").attr("src", urlgif).attr("id", "gif");
     $(`#${this.id}`).append(imagegif);
   }
@@ -103,6 +104,12 @@ class Enemy extends Thing {
     this.moving;
     this.atePacMan = false;
     this.atePacManHandler;
+  }
+  reformatgif() {
+    console.log($(`#${this.id}`).attr("id"));
+    $(`#${this.id}`).children().removeAttr("src");
+    console.log($(`#${this.id}`).attr("id"));
+    $(`#${this.id}`).children().attr("src", `${this.gif}`);
   }
   receiveOpponent(obj) {
     this.opponent = obj;
@@ -240,6 +247,9 @@ class PacMan extends Thing {
         ) {
           this.row += 1;
           this.generateCss();
+          $("#paccy img").css({
+            transform: "rotate(90deg)",
+          });
         }
       } else if (event.keyCode === 87) {
         // console.log("Move Up");
@@ -249,6 +259,9 @@ class PacMan extends Thing {
         ) {
           this.row -= 1;
           this.generateCss();
+          $("#paccy img").css({
+            transform: "rotate(-90deg)",
+          });
         }
       } else if (event.keyCode === 68 && this.keyCode !== 68) {
         // console.log("Move Right");
@@ -258,6 +271,9 @@ class PacMan extends Thing {
         ) {
           this.col += 1;
           this.generateCss();
+          $("#paccy img").css({
+            transform: "rotate(0deg)",
+          });
         }
       } else if (event.keyCode === 65) {
         // console.log("Move Left");
@@ -267,6 +283,9 @@ class PacMan extends Thing {
         ) {
           this.col -= 1;
           this.generateCss();
+          $("#paccy img").css({
+            transform: "rotate(180deg)",
+          });
         }
       }
       const nextPositionObj = findObjinArray([this.col, this.row], this.nodes); //Pacman uses all the array with all the node objs to retrieve the node that corresponds to the current position of Panman and appends the path array for the enemy to follow.
@@ -303,13 +322,20 @@ class PacMan extends Thing {
       this.powerUpArray = removeArrayinArray(pacmanPosition, this.powerUpArray);
       $(`.power-up#${powerUpid}`).remove();
       this.super = true;
+
       for (const item in this.opponents) {
-        this.opponents[item].color = "green";
+        // $("#Inky").removeAttr("src");
+        // $("#Blinky").removeAttr("src");
+        // console.log($("#Inky"), $("#Blinky"));
+        $(`#${this.opponents[item].id}`).children().removeAttr("src");
+        $(`#${this.opponents[item].id}`)
+          .children()
+          .attr("src", "Images/scared.png");
       }
       setTimeout(() => {
         this.super = false;
         for (const item in this.opponents) {
-          this.opponents[item].color = "red";
+          this.opponents[item].reformatgif();
         }
       }, 10000);
     }
@@ -477,7 +503,7 @@ class GameMechanics {
     powerUpContainer.css({
       gridColumn: column,
       gridRow: row,
-      backgroundColor: "blue",
+      backgroundColor: "black",
       display: "grid",
       gridTemplateColumns: "repeat(3,1fr)",
       gridTemplateRows: "repeat(3,1fr)",
@@ -518,7 +544,7 @@ class GameMechanics {
     coinContainer.css({
       gridColumn: column,
       gridRow: row,
-      backgroundColor: "blue",
+      backgroundColor: "black",
       display: "grid",
       gridTemplateColumns: "33.33% 33.33% 33.33%",
       gridTemplateRows: "33.33% 33.33% 33.33%",
@@ -529,7 +555,7 @@ class GameMechanics {
     //Coin id generation here is still not done properly, its not unique enough, make sure to change the eatCoin function in pacman as well //resolved
     const coin = $("<img>")
       .attr("id", `${colstring + "-" + rowstring}`)
-      .attr("src", "Images/BrxG.gif")
+      .attr("src", "Images/coin.png")
       .addClass("coin");
     coin.css({
       gridColumn: 2,
@@ -739,48 +765,6 @@ class Game {
   constructor() {
     this.gameMechanics = new GameMechanics();
   }
-  // generatePlatform() {
-  // $(".main-container").css({
-  //   position: "absolute",
-  //   top: "10px",
-  //   left: "10px",
-  //   height: "500px",
-  //   width: "600px",
-  //   backgroundColor: "black",
-  //   display: "grid",
-  // });
-  // $(".main-container").css({
-  //   margin: "5px",
-  //   gridTemplateColumns: "60% 40%",
-  //   gridTemplateRows: "100px auto",
-  // });
-  // $(".game").css({
-  //   backgroundColor: "blue",
-  //   gridColumn: "1 / 3",
-  //   gridRow: 2,
-  //   height: "400px",
-  //   width: "600px",
-  //   display: "grid",
-  // });
-  // $(".score").css({
-  //   backgroundColor: "red",
-  //   gridColumn: 2,
-  //   gridRow: 1,
-  //   fontSize: "60px",
-  //   color: "white",
-  //   fontFamily: "Notable",
-  //   textAlign: "center",
-  // });
-  // $(".header").css({
-  //   backgroundColor: "green",
-  //   gridColumn: 1,
-  //   gridRow: 1,
-  //   fontSize: "60px",
-  //   textAlign: "center",
-  //   fontFamily: "Notable",
-  //   color: "yellow",
-  // });
-  // }
   startMenu() {
     $(".game").addClass("startMenu");
     const startButton = $("<div>")
@@ -792,26 +776,6 @@ class Game {
     $("#start-button").on("click", (event) => {
       this.loadGame();
     });
-    // $(".game").css({
-    //   backgroundColor: "blue",
-    //   gridColumn: "1 / 3",
-    //   gridRow: 2,
-    //   height: "400px",
-    //   width: "600px",
-    //   display: "grid",
-    //   gridTemplateColumns: "45% 10% 45%",
-    //   gridTemplateRows: "45% 10% 45%",
-    // });
-
-    // startButton.css({
-    //   gridColumn: 2,
-    //   gridRow: 2,
-    //   backgroundColor: "blue",
-    //   textAlign: "center",
-    //   fontFamily: "Notable",
-    //   color: "yellow",
-    //   cursor: "pointer",
-    // });
   }
   loadGame() {
     $(".game").empty();

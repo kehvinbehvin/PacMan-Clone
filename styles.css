@@ -11,7 +11,7 @@
   grid-template-rows: 100px auto;
 }
 .game {
-  background-color: blue;
+  background-color: black;
   grid-column: 1 / 3;
   grid-row: 2;
   height: 400px;
@@ -19,7 +19,7 @@
   display: grid;
 }
 .score {
-  background-color: red;
+  background-color: blue;
   grid-column: 2;
   grid-row: 1;
   font-size: 60px;
@@ -28,7 +28,7 @@
   text-align: center;
 }
 .header {
-  background-color: green;
+  background-color: blue;
   grid-column: 1;
   grid-row: 1;
   font-size: 60px;
@@ -38,7 +38,7 @@
 }
 
 .game.startMenu {
-  background-color: blue;
+  background-color: black;
   grid-column: 1 / 3;
   grid-row: 2;
   height: 400px;
@@ -50,7 +50,7 @@
 .game .startButton.startMenu {
   grid-column: 2;
   grid-row: 2;
-  background-color: blue;
+  background-color: black;
   text-align: center;
   font-family: Notable;
   color: yellow;
@@ -58,7 +58,7 @@
 }
 
 .game.loadGame {
-  background-color: blue;
+  background-color: black;
   grid-column: 1 / 3;
   grid-row: 2;
   height: 400px;
@@ -69,7 +69,7 @@
 }
 
 .game.loadGame {
-  background-color: blue;
+  background-color: black;
   grid-column: 1 / 3;
   grid-row: 2;
   height: 400px;

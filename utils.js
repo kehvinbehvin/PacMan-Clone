@@ -4,6 +4,7 @@ const createcolumn = (parent, start, end, col, id) => {
     gridColumn: col,
     gridRow: `${start}/${end}`,
     backgroundColor: "black",
+    border: "2px solid blue",
   });
   parent.append(column);
   return { start: start, end: end, col: col };
@@ -14,6 +15,7 @@ const createrow = (parent, start, end, row, id) => {
     gridColumn: `${start}/${end}`,
     gridRow: row,
     backgroundColor: "black",
+    border: "2px solid blue",
   });
   parent.append(column);
   return { start: start, end: end, row: row };
