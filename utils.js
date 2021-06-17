@@ -1,11 +1,3 @@
-const reverseArray = (array) => {
-  const newArray = [];
-  for (let i = 0; i < array.length; i++) {
-    newArray.push(array.pop());
-  }
-  return newArray;
-};
-
 const createcolumn = (parent, start, end, col, id) => {
   const column = $("<div>").addClass("column").attr("id", `${id}`);
   column.css({
@@ -169,5 +161,4 @@ export {
   findMinObjinArray,
   removeObjsinArray,
   booleanObjinArray,
-  reverseArray,
 };

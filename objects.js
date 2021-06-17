@@ -10,7 +10,6 @@ import {
   getColWalls,
   findObjinArray,
   booleanObjinArray,
-  reverseArray,
 } from "./utils.js";
 
 class Thing {
@@ -131,10 +130,10 @@ class Enemy extends Thing {
         const YInspectEND =
           this.regularPaths[i][j][this.regularPaths[i][j].length - 1].row;
         if (XInspect === tofindX && YInspect === tofindY) {
-          console.log("found");
+          // console.log("found");
           nextPath.push(this.regularPaths[i][j]);
         } else if (XInspectEND === tofindX && YInspectEND === tofindY) {
-          console.log("found reverse");
+          // console.log("found reverse");
           nextPath.push(this.regularPaths[i][j].reverse());
         }
       }
@@ -170,7 +169,7 @@ class Enemy extends Thing {
           this.atePacMan = true;
         }
       }
-    }, 100);
+    }, 50);
   }
   startMoving(speed) {
     if (this.id === "Inky") {
@@ -181,7 +180,7 @@ class Enemy extends Thing {
           //When Enemy finishes the path algo
           this.stop();
         }
-        console.log(this.id);
+        // console.log(this.id);
         this.col = this.path[0].col;
         this.row = this.path[0].row;
         this.generateCss();
@@ -191,13 +190,13 @@ class Enemy extends Thing {
       this.path = this.chooseStartPath();
       this.pacManCheck();
       this.moving = setInterval(() => {
-        console.log(this.path.length);
+        // console.log(this.path.length);
         if (this.path.length <= 5) {
-          console.log(this.path);
+          // console.log(this.path);
           this.path = this.path.concat(this.chooseRegularPath());
           console.log(this.path);
         }
-        console.log(this.id);
+        // console.log(this.id);
         this.col = this.path[0].col;
         this.row = this.path[0].row;
         this.generateCss();
@@ -287,7 +286,7 @@ class PacMan extends Thing {
     const powerUp = findArrayinArray(pacmanPosition, this.powerUpArray);
     //false means there is a coin
     if (powerUp === false) {
-      console.log("theres a powerup below");
+      // console.log("theres a powerup below");
       this.eatPowerUp();
     }
   }
@@ -348,9 +347,9 @@ class GameMechanics {
     this.regularPaths = [];
   }
   makePacMan() {
-    this.paccy = new PacMan(10, 10); // Walldetection fn called
+    this.paccy = new PacMan(10, 10);
     this.paccy.generateBody(this.ref);
-    this.paccy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray); // retrieve
+    this.paccy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
     this.paccy.retrieveCoinsinfo(this.startingCoins);
     this.paccy.retrievePowerUpinfo(this.powerUpArray);
     return this.paccy;
@@ -466,7 +465,7 @@ class GameMechanics {
     }
 
     this.regularPaths = [innerAndOuter, innerAndMiddle, middleAndOuter];
-    console.log(this.regularPaths);
+    // console.log(this.regularPaths);
   }
   generatePowerUp(id, column, row) {
     const colstring = column.toString();
@@ -726,92 +725,103 @@ class Game {
   constructor() {
     this.gameMechanics = new GameMechanics();
   }
-  generatePlatform() {
-    $(".main-container").css({
-      position: "absolute",
-      top: "10px",
-      left: "10px",
-      height: "500px",
-      width: "600px",
-      backgroundColor: "black",
-      display: "grid",
-    });
-    $(".main-container").css({
-      margin: "5px",
-      gridTemplateColumns: "60% 40%",
-      gridTemplateRows: "100px auto",
-    });
-    $(".game").css({
-      backgroundColor: "blue",
-      gridColumn: "1 / 3",
-      gridRow: 2,
-      height: "400px",
-      width: "600px",
-      display: "grid",
-    });
-    $(".score").css({
-      backgroundColor: "red",
-      gridColumn: 2,
-      gridRow: 1,
-      fontSize: "60px",
-      color: "white",
-      fontFamily: "Notable",
-      textAlign: "center",
-    });
-    $(".header").css({
-      backgroundColor: "green",
-      gridColumn: 1,
-      gridRow: 1,
-      fontSize: "60px",
-      textAlign: "center",
-      fontFamily: "Notable",
-      color: "yellow",
-    });
-  }
+  // generatePlatform() {
+  // $(".main-container").css({
+  //   position: "absolute",
+  //   top: "10px",
+  //   left: "10px",
+  //   height: "500px",
+  //   width: "600px",
+  //   backgroundColor: "black",
+  //   display: "grid",
+  // });
+  // $(".main-container").css({
+  //   margin: "5px",
+  //   gridTemplateColumns: "60% 40%",
+  //   gridTemplateRows: "100px auto",
+  // });
+  // $(".game").css({
+  //   backgroundColor: "blue",
+  //   gridColumn: "1 / 3",
+  //   gridRow: 2,
+  //   height: "400px",
+  //   width: "600px",
+  //   display: "grid",
+  // });
+  // $(".score").css({
+  //   backgroundColor: "red",
+  //   gridColumn: 2,
+  //   gridRow: 1,
+  //   fontSize: "60px",
+  //   color: "white",
+  //   fontFamily: "Notable",
+  //   textAlign: "center",
+  // });
+  // $(".header").css({
+  //   backgroundColor: "green",
+  //   gridColumn: 1,
+  //   gridRow: 1,
+  //   fontSize: "60px",
+  //   textAlign: "center",
+  //   fontFamily: "Notable",
+  //   color: "yellow",
+  // });
+  // }
   startMenu() {
-    $(".game").css({
-      backgroundColor: "blue",
-      gridColumn: "1 / 3",
-      gridRow: 2,
-      height: "400px",
-      width: "600px",
-      display: "grid",
-      gridTemplateColumns: "45% 10% 45%",
-      gridTemplateRows: "45% 10% 45%",
-    });
-    const startButton = $("<div>").attr("id", "start-button").text("Start");
-    startButton.css({
-      gridColumn: 2,
-      gridRow: 2,
-      backgroundColor: "blue",
-      textAlign: "center",
-      fontFamily: "Notable",
-      color: "yellow",
-      cursor: "pointer",
-    });
+    $(".game").addClass("startMenu");
+
+    const startButton = $("<div>")
+      .attr("id", "start-button")
+      .text("Start")
+      .addClass("startButton")
+      .addClass("startMenu");
+
     $(".game").append(startButton);
     $("#start-button").on("click", (event) => {
       this.loadGame();
     });
+    // $(".game").css({
+    //   backgroundColor: "blue",
+    //   gridColumn: "1 / 3",
+    //   gridRow: 2,
+    //   height: "400px",
+    //   width: "600px",
+    //   display: "grid",
+    //   gridTemplateColumns: "45% 10% 45%",
+    //   gridTemplateRows: "45% 10% 45%",
+    // });
+
+    // startButton.css({
+    //   gridColumn: 2,
+    //   gridRow: 2,
+    //   backgroundColor: "blue",
+    //   textAlign: "center",
+    //   fontFamily: "Notable",
+    //   color: "yellow",
+    //   cursor: "pointer",
+    // });
   }
   loadGame() {
     $(".game").empty();
     $("#overlay").remove();
     $("#score-board").remove();
     $(".score").text("0");
-    $(".game").css({
-      backgroundColor: "blue",
-      gridColumn: "1 / 3",
-      gridRow: 2,
-      height: "400px",
-      width: "600px",
-      display: "grid",
-      gridTemplateColumns: "none",
-      gridTemplateRows: "none",
-    });
+    $(".game").addClass("loadGame");
+
     this.gameMechanics.loadGame();
     this.gameMechanics.runGame();
     this.endMenu();
+
+    // $(".game").css({
+    //   backgroundColor: "blue",
+    //   gridColumn: "1 / 3",
+    //   gridRow: 2,
+    //   height: "400px",
+    //   width: "600px",
+    //   display: "grid",
+    //   gridTemplateColumns: "none",
+    //   gridTemplateRows: "none",
+    // });
   }
   endMenu() {
     const checkPacMan = setInterval(() => {
@@ -892,7 +902,7 @@ class Game {
         $("#re-start-button").on("click", (event) => {
           this.loadGame();
         });
-      } //end of if statement
+      }
     }, 100);
   }
 }
