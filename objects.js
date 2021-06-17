@@ -106,9 +106,7 @@ class Enemy extends Thing {
     this.atePacManHandler;
   }
   reformatgif() {
-    console.log($(`#${this.id}`).attr("id"));
     $(`#${this.id}`).children().removeAttr("src");
-    console.log($(`#${this.id}`).attr("id"));
     $(`#${this.id}`).children().attr("src", `${this.gif}`);
   }
   receiveOpponent(obj) {
@@ -196,7 +194,7 @@ class Enemy extends Thing {
         this.generateCss();
         this.path.shift();
       }, speed);
-    } else if (this.id === "Blinky") {
+    } else if (this.id === "Blinky" || this.id === "Pinky") {
       this.path = this.chooseStartPath();
       this.pacManCheck();
       this.moving = setInterval(() => {
@@ -401,6 +399,16 @@ class GameMechanics {
     this.blinky.retrieveRegularPaths(
       this.regularPaths,
       this.generateStartingPaths([20, 12])
+    );
+
+    this.pinky = new Enemy(21, 11, "Pinky", "red");
+    this.pinky.generateBody(this.ref, "Images/redghost.gif");
+    this.pinky.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
+    this.pinky.receiveOpponent(this.paccy);
+    this.paccy.receiveOpponent(this.pinky, this.pinky.id);
+    this.pinky.retrieveRegularPaths(
+      this.regularPaths,
+      this.generateStartingPaths([21, 11])
     );
   }
   runDijkstra(sourcePosition, destinationposition, enemyid) {
@@ -760,6 +768,7 @@ class GameMechanics {
   runGame() {
     this.inky.startMoving(800);
     this.blinky.startMoving(500);
+    this.pinky.startMoving(600);
     this.paccy.listenMovement();
   }
 }
@@ -807,11 +816,13 @@ class Game {
       if (
         this.gameMechanics.inky.atePacMan ||
         this.gameMechanics.blinky.atePacMan ||
+        this.gameMechanics.pinky.atePacMan ||
         this.totalScore === this.currentScore
       ) {
         clearInterval(checkPacMan);
         this.gameMechanics.blinky.stop();
         this.gameMechanics.inky.stop();
+        this.gameMechanics.pinky.stop();
         $("body").off("keydown");
         const overlay = $("<div>").attr("id", "overlay");
         overlay.css({
