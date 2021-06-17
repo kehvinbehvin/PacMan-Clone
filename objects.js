@@ -526,7 +526,7 @@ class GameMechanics {
     powerUp.css({
       gridColumn: 2,
       gridRow: 2,
-      backgroundColor: "pink",
+      backgroundColor: "#FF00FE",
     });
     $(`#${id}`).append(powerUp);
   }
