@@ -20,3 +20,12 @@ The Enemy's movement is more complex. Initial implementation with Math.random fu
 Thus, a path finding algorithm was implemented to allow the enemy to move in the direction of pacMan while avoiding obstacles. The algorithm was initially planned to serve dynamic sourcenode and destination node positioning however, no solution could be found to recalculate the shortest path of a dynamic sourceNode without re-running the algorithm, which takes a substantial amount of time to run. Hence, the current solution only appends movements taken by Pacman onto the existing shortest path array to allow the enemy to follow pacman's footsteps after it completes the initial shortest path.
 
 An inherent problem with using a path finding algorithm in a game with multiple enemies is that all enemies will be moving along the same path. Hence a solution for this, was to use waypoints (doors in the maze) as checkpoints. Dijkstra's algo was used to calculate the path between waypoints and each time the enemy approached a waypoint, it randomly chooses a next waypoint to move towards.
+
+Main Challenges of Project:
+
+1. Wall detection for both PacMan and Enemies
+2. Pathfinder alogrithm and Creating Waypoints
+3. Interactions between PacMan and different Enemies
+   ->Enemies' movements were dependent on Pacman's movements
+   ->PacMan super abilities can kill enemies
+   ->Enemies killing PacMan
