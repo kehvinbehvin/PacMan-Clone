@@ -26,15 +26,17 @@ class Thing {
     this.environmentCollision;
     this.score = 0;
   }
-  generateBody(parent) {
+  generateBody(parent, urlgif) {
     parent.append($("<div>").attr("id", `${this.id}`));
     this.generateCss();
+    const imagegif = $("<img>").attr("src", urlgif).attr("id", "gif");
+    $(`#${this.id}`).append(imagegif);
   }
   generateCss() {
     $(`#${this.id}`).css({
       gridColumn: this.col,
       gridRow: this.row,
-      backgroundColor: this.color,
+      backgroundColor: "none",
     });
   }
   retrieveWallinfo(rowwalls, colwalls) {
@@ -116,7 +118,7 @@ class Enemy extends Thing {
   chooseRegularPath() {
     //regular path is made of 3 big arrays, each big array is made up of many arrays of node objs, the path is the array of nodes, i want to only retrieve the array of nodes of which the row and col is the same as the current position of blinky
     let nextPath = [];
-    console.log(this.regularPaths);
+    // console.log(this.regularPaths);
     for (let i = 0; i < 3; i++) {
       //look at 3 array
       for (let j = 0; j < this.regularPaths[i].length; j++) {
@@ -349,7 +351,7 @@ class GameMechanics {
   }
   makePacMan() {
     this.paccy = new PacMan(10, 10);
-    this.paccy.generateBody(this.ref);
+    this.paccy.generateBody(this.ref, "Images/XOsf.gif");
     this.paccy.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
     this.paccy.retrieveCoinsinfo(this.startingCoins);
     this.paccy.retrievePowerUpinfo(this.powerUpArray);
@@ -357,14 +359,14 @@ class GameMechanics {
   }
   makeEnemies() {
     this.inky = new Enemy(20, 11, "Inky", "purple");
-    this.inky.generateBody(this.ref);
+    this.inky.generateBody(this.ref, "Images/N0f.gif");
     this.inky.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
     this.inky.receiveOpponent(this.paccy);
     this.paccy.receiveOpponent(this.inky, this.inky.id);
     this.runDijkstra([20, 11], [10, 10], "Inky");
 
     this.blinky = new Enemy(20, 12, "Blinky", "red");
-    this.blinky.generateBody(this.ref);
+    this.blinky.generateBody(this.ref, "Images/YMXv.gif");
     this.blinky.retrieveWallinfo(this.wallsRowArray, this.wallsColArray);
     this.blinky.receiveOpponent(this.paccy);
     this.paccy.receiveOpponent(this.blinky, this.blinky.id);
@@ -511,25 +513,36 @@ class GameMechanics {
     const colstring = column.toString();
     const rowstring = row.toString();
     const coinContainer = $("<div>").attr("id", `${id}`);
+    const divided = 20 / 3;
+    const dividedString = divided.toString();
     coinContainer.css({
       gridColumn: column,
       gridRow: row,
       backgroundColor: "blue",
       display: "grid",
-      gridTemplateColumns: "repeat(3,1fr)",
-      gridTemplateRows: "repeat(3,1fr)",
+      gridTemplateColumns: "33.33% 33.33% 33.33%",
+      gridTemplateRows: "33.33% 33.33% 33.33%",
+      maxHeight: "20px",
+      maxWidht: "20px",
     });
     $(".game").append(coinContainer);
     //Coin id generation here is still not done properly, its not unique enough, make sure to change the eatCoin function in pacman as well //resolved
-    const coin = $("<div>")
+    const coin = $("<img>")
       .attr("id", `${colstring + "-" + rowstring}`)
+      .attr("src", "Images/BrxG.gif")
       .addClass("coin");
     coin.css({
       gridColumn: 2,
       gridRow: 2,
-      backgroundColor: "brown",
     });
     $(`#${id}`).append(coin);
+    // const imagegif = $("<img>")
+
+    //   .attr("id", "gif");
+    // imagegif.css({
+    //   margin: "none",
+    // });
+    // $(`#${colstring + "-" + rowstring}`).append(imagegif);
   }
   getfreesquares() {
     const allsquares = calcAllcolumns(30, 20);
@@ -770,13 +783,11 @@ class Game {
   // }
   startMenu() {
     $(".game").addClass("startMenu");
-
     const startButton = $("<div>")
       .attr("id", "start-button")
       .text("Start")
       .addClass("startButton")
       .addClass("startMenu");
-
     $(".game").append(startButton);
     $("#start-button").on("click", (event) => {
       this.loadGame();
@@ -812,7 +823,6 @@ class Game {
     this.gameMechanics.loadGame();
     this.gameMechanics.runGame();
     this.endMenu();
-
     // $(".game").css({
     //   backgroundColor: "blue",
     //   gridColumn: "1 / 3",
